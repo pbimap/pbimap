@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PBImap - Custom Power BI Map Visual</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <title>PBImap - Simplifying Map Dashboards for Power BI</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         * {
             box-sizing: border-box;
@@ -18,49 +17,26 @@
         body {
             background-color: #f4f6f9;
             color: #333;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             padding: 20px;
         }
 
         header {
             text-align: center;
-            padding: 50px 0;
+            margin-top: 50px;
         }
 
         header h1 {
-            font-size: 3em;
+            font-size: 2.5em;
             color: #1a73e8;
         }
 
         header p {
-            font-size: 1.2em;
+            font-size: 1.1em;
             color: #666;
             margin: 10px 0 20px;
-        }
-
-        .nav-menu {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-            font-size: 1.1em;
-        }
-
-        .nav-menu a {
-            color: #333;
-            text-decoration: none;
-            margin: 0 15px;
-            padding: 5px 10px;
-            border-bottom: 2px solid transparent;
-            transition: color 0.3s, border-bottom-color 0.3s;
-        }
-
-        .nav-menu a:hover {
-            color: #1a73e8;
-            border-bottom-color: #1a73e8;
         }
 
         .features {
@@ -68,118 +44,109 @@
             flex-wrap: wrap;
             gap: 20px;
             justify-content: center;
-            margin-top: 50px;
+            margin-top: 30px;
         }
 
         .feature-box {
             background-color: #fff;
-            border-radius: 10px;
+            border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             padding: 20px;
             text-align: center;
-            flex: 1 1 300px;
-            max-width: 300px;
-        }
-
-        .feature-box i {
-            font-size: 2em;
-            color: #1a73e8;
-            margin-bottom: 10px;
+            width: 280px;
         }
 
         .feature-box h3 {
             font-size: 1.2em;
             margin: 10px 0;
+            color: #1a73e8;
         }
 
         .feature-box p {
             color: #666;
+            font-size: 0.95em;
         }
 
-        .cta {
+        .download-section {
             text-align: center;
-            margin-top: 50px;
+            margin-top: 40px;
         }
 
-        .cta button {
+        .download-section h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #1a73e8;
+        }
+
+        .download-section p {
+            font-size: 1em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .download-section a {
+            display: inline-block;
             background-color: #1a73e8;
             color: #fff;
-            font-size: 1.2em;
-            padding: 15px 30px;
-            border: none;
+            font-size: 1em;
+            padding: 12px 24px;
             border-radius: 5px;
-            cursor: pointer;
+            text-decoration: none;
             transition: background-color 0.3s ease;
         }
 
-        .cta button:hover {
+        .download-section a:hover {
             background-color: #155ab6;
         }
 
         footer {
             text-align: center;
-            padding: 30px 0;
-            margin-top: 50px;
+            padding: 20px 0;
             color: #666;
             font-size: 0.9em;
+            margin-top: 50px;
+        }
+
+        .footer-heart {
+            color: red;
+            margin-left: 5px;
+            vertical-align: middle;
         }
     </style>
 </head>
-
 <body>
-    <div class="container">
-        <header>
-            <h1>PBImap: Your Custom Power BI Map Visual</h1>
-            <p>Bring your geographic data to life with PBImap – an intuitive, interactive, and dynamic map solution for Power BI.</p>
-            <div class="nav-menu">
-                <a href="index.html">Home</a>
-                <a href="usage.html">Usage & Instructions</a>                
-                <a href="blogs.html">Blogs</a>
-                <a href="downloads.html">Downloads</a>
-            </div>
-        </header>
+    <header>
+        <h1>PBImap - Simplifying Map Dashboards for Power BI</h1>
+        <p>A powerful, interactive map solution for Power BI, designed to visualize and analyze geographic data with precision and ease.</p>
+    </header>
 
-        <section class="features">
-            <div class="feature-box">
-                <i class="fas fa-map-marked-alt"></i>
-                <h3>Interactive Mapping</h3>
-                <p>Drag and drop your data points to visualize locations effortlessly. Experience responsive interaction with your data.</p>
-            </div>
-            <div class="feature-box">
-                <i class="fas fa-chart-line"></i>
-                <h3>Data-Driven Insights</h3>
-                <p>Leverage geographical data to uncover trends, pinpoint hotspots, and gain valuable insights with ease.</p>
-            </div>
-            <div class="feature-box">
-                <i class="fas fa-cogs"></i>
-                <h3>Fully Customizable</h3>
-                <p>Adjust layers, colors, and visual styles to create a map that aligns with your data visualization needs and aesthetics.</p>
-            </div>
-            <div class="feature-box">
-                <i class="fas fa-mobile-alt"></i>
-                <h3>Responsive Design</h3>
-                <p>Optimized for all devices, PBImap ensures your map looks great and performs well on desktops, tablets, and phones.</p>
-            </div>
-            <div class="feature-box">
-                <i class="fas fa-code"></i>
-                <h3>Easy Integration</h3>
-                <p>Seamlessly integrates with Power BI to enhance your dashboard capabilities with real-time map visualization.</p>
-            </div>
-            <div class="feature-box">
-                <i class="fas fa-lock"></i>
-                <h3>Secure & Reliable</h3>
-                <p>Built with data security in mind, PBImap protects your sensitive information with advanced security features.</p>
-            </div>
-        </section>
-
-        <div class="cta">
-            <button onclick="window.location.href='https://example.com/download'">Get Started with PBImap</button>
+    <section class="features">
+        <div class="feature-box">
+            <h3>Seamless Integration</h3>
+            <p>Effortlessly incorporate data points to gain geographic insights directly in Power BI.</p>
         </div>
+        <div class="feature-box">
+            <h3>Customizable Visualization</h3>
+            <p>Configure map layers, colors, and styles to align with your data requirements and aesthetic preferences.</p>
+        </div>
+        <div class="feature-box">
+            <h3>Optimized Performance</h3>
+            <p>Handles large datasets efficiently with optimized layers for smooth, responsive interaction.</p>
+        </div>
+        <div class="feature-box">
+            <h3>Interactive Insights</h3>
+            <p>Analyze data trends and patterns to make well-informed, data-driven decisions.</p>
+        </div>
+    </section>
 
-        <footer>
-            &copy; 2024 PBImap. All Rights Reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a>
-        </footer>
+    <div class="download-section">
+        <h3>Download PBImap V0.0.1</h3>
+        <p>Enhance your Power BI dashboards with dynamic, interactive map visualizations.</p>
+        <a href="https://github.com/pbimap/PBIMapVisual/releases/download/draft/draft_release_code.zip">Download Now</a>
     </div>
-</body>
 
+    <footer>
+        © 2024 PBImap - Created with <span class="footer-heart">&hearts;</span> by WWO - H Ng.
+    </footer>
+</body>
 </html>
