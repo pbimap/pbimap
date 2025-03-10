@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Add viewport for responsiveness -->
   <title>COH - Sewer Overflow Awareness</title>
   <!-- Chart.js + date adapter + zoom plugin via CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -32,10 +33,11 @@
       display: flex;
       width: 100%;
       height: 100%;
+      flex-direction: row; /* Default for larger screens */
     }
     .sidebar {
-      width: 250px; /* Reduced from 300px */
-      padding: 15px; /* Reduced from 25px */
+      width: 250px;
+      padding: 15px;
       background: rgba(255, 255, 255, 0.05);
       border-right: 2px solid rgba(255, 255, 255, 0.1);
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
@@ -45,7 +47,7 @@
       flex-shrink: 0;
     }
     .sidebar h3 {
-      font-size: 1.4em; /* Slightly smaller */
+      font-size: 1.4em;
       margin-bottom: 20px;
       color: #00d4ff;
       text-align: left;
@@ -55,41 +57,42 @@
     }
     .main-content {
       flex: 1;
-      padding: 15px; /* Reduced from 30px */
+      padding: 15px;
       display: flex;
       flex-direction: column;
       align-items: center;
       transform: translateZ(20px);
       transition: transform 0.3s ease;
-      overflow-y: auto;
+      overflow-y: hidden;
     }
     .content-wrapper {
       display: flex;
       flex-direction: row;
       width: 100%;
-      max-width: 1600px; /* Increased from 1400px for wider view */
-      gap: 15px; /* Reduced from 20px */
-      height: calc(100% - 80px); /* Adjusted to fit reduced padding */
+      max-width: 1600px;
+      gap: 15px;
+      height: calc(100% - 90px);
+      margin: 15px 0; /* Ensure margin is applied to create space */
     }
     .chart-container, .map-container {
       flex: 1;
       background: rgba(255, 255, 255, 0.05);
       border-radius: 15px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 212, 255, 0.2);
-      padding: 15px; /* Reduced from 20px */
+      padding: 15px;
       transform: rotateX(-5deg) translateZ(30px);
       overflow: hidden;
       height: 100%;
+      max-height: 100%;
     }
     canvas, #map {
       width: 100% !important;
       height: 100% !important;
-      max-height: 650px; /* Slightly increased for better fit */
       border-radius: 10px;
       box-shadow: inset 0 0 15px rgba(0, 212, 255, 0.3);
     }
     button {
-      padding: 8px 18px; /* Slightly smaller */
+      padding: 8px 18px;
       font-size: 15px;
       cursor: pointer;
       margin: 4px;
@@ -113,13 +116,13 @@
       transform: scale(1.05);
     }
     .checkbox-group {
-      margin-bottom: 12px; /* Reduced from 15px */
+      margin-bottom: 12px;
     }
     .checkbox-group summary {
       cursor: pointer;
       font-weight: 600;
-      font-size: 1em; /* Slightly smaller */
-      padding: 8px 12px; /* Reduced padding */
+      font-size: 1em;
+      padding: 8px 12px;
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
       border-radius: 8px 8px 0 0;
       display: flex;
@@ -145,7 +148,7 @@
     .checkbox-group input[type="checkbox"] {
       -webkit-appearance: none;
       appearance: none;
-      width: 18px; /* Slightly smaller */
+      width: 18px;
       height: 18px;
       min-width: 18px;
       min-height: 18px;
@@ -180,14 +183,14 @@
     .checkbox-group label {
       display: flex;
       align-items: center;
-      padding: 6px 12px; /* Reduced padding */
+      padding: 6px 12px;
       background: rgba(255, 255, 255, 0.03);
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       transition: all 0.3s ease;
       text-align: left;
     }
     .checkbox-group details label {
-      padding-left: 30px; /* Adjusted */
+      padding-left: 30px;
     }
     .checkbox-group label:hover {
       background: rgba(255, 255, 255, 0.1);
@@ -198,33 +201,33 @@
       border-radius: 0 0 8px 8px;
     }
     h1 {
-      font-size: 1.8em; /* Slightly smaller */
+      font-size: 1.8em;
       color: #00d4ff;
       text-shadow: 0 0 15px #00d4ff, 0 0 30px #00d4ff;
-      margin-bottom: 8px; /* Reduced */
+      margin-bottom: 8px;
       text-align: center;
     }
     p {
-      font-size: 0.9em; /* Slightly smaller */
+      font-size: 0.9em;
       color: #b0b0b0;
-      margin-bottom: 15px; /* Reduced */
+      margin-bottom: 15px;
       text-align: center;
     }
     .switch-container {
-      margin-bottom: 12px; /* Reduced */
-      padding: 6px 0; /* Adjusted */
+      margin-bottom: 12px;
+      padding: 6px 0;
       background: transparent;
       text-align: center;
     }
     .structure-buttons {
       display: flex;
       justify-content: space-between;
-      gap: 6px; /* Reduced */
+      gap: 6px;
     }
     .structure-btn {
       flex: 1;
-      padding: 6px 10px; /* Reduced */
-      font-size: 13px; /* Smaller */
+      padding: 6px 10px;
+      font-size: 13px;
       background: linear-gradient(45deg, #1a1a2e, #16213e);
       border: 2px solid #00d4ff;
       border-radius: 8px;
@@ -245,6 +248,47 @@
       color: #fff;
       transform: scale(1.05);
       box-shadow: 0 6px 15px rgba(0, 212, 255, 0.8);
+    }
+
+    /* Media query for mobile responsiveness */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column; /* Stack sidebar and main content vertically */
+      }
+      .sidebar {
+        width: 100%;
+        height: auto;
+        max-height: 30vh; /* Limit sidebar height on mobile */
+        border-right: none;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+      }
+      .main-content {
+        flex: 1;
+        overflow-y: auto; /* Allow scrolling on mobile if content overflows */
+      }
+      .content-wrapper {
+        flex-direction: column; /* Stack chart and map vertically */
+        height: auto; /* Allow content to dictate height */
+        min-height: calc(100% - 90px); /* Ensure it fills remaining space */
+      }
+      .chart-container, .map-container {
+        width: 100%;
+        height: 50vh; /* Each takes half the viewport height */
+        max-height: 50vh;
+      }
+      .chart-container {
+        margin-bottom: 15px; /* Add spacing between chart and map */
+      }
+      button {
+        font-size: 12px; /* Smaller buttons on mobile */
+        padding: 6px 12px;
+      }
+      h1 {
+        font-size: 1.5em; /* Smaller header on mobile */
+      }
+      p {
+        font-size: 0.8em; /* Smaller text on mobile */
+      }
     }
   </style>
 </head>
@@ -270,6 +314,7 @@
         <button id="monthlyBtn" class="selected">Monthly</button>
         <button id="yearlyBtn">Yearly</button>
         <button id="resetZoomBtn">Reset Zoom</button>
+        <button id="toggleMapBtn">Show Map</button>
       </div>
       <div class="content-wrapper">
         <div class="chart-container">
@@ -297,6 +342,7 @@
     let selectedStructureGroup = "All";
     let currentPeriod = 'monthly';
     let selectedDate = null;
+    let mapVisible = true;
 
     const sewerMainTypes = ["Manhole", "Lift Station", "Gravity Main", "Force Main", "Treatment Plant"];
 
@@ -314,17 +360,10 @@
       { event: "Winter Storm (Snow and Extreme Cold)", date: new Date("2025-01-20"), emoji: "❄️" }
     ];
 
-    const causeGroups = {
-      "Grease": { color: "#00FF99", outline: "#00CC77" }, // Neon teal-green
-      "Rags/Wipes": { color: "#FF00CC", outline: "#CC0099" }, // Neon magenta
-      "Roots": { color: "#FF9900", outline: "#CC7700" }, // Neon orange
-      "Structural Issues": { color: "#FF3333", outline: "#CC1111" }, // Neon red
-      "Blockages": { color: "#FFFF00", outline: "#CCCC00" }, // Neon yellow
-      "Wet Weather": { color: "#00CCFF", outline: "#0099CC" }, // Neon cyan
-      "Lift Station/Treatment Plant/Power": { color: "#9933FF", outline: "#7711CC" }, // Neon purple
-      "Cross Connections": { color: "#33FF33", outline: "#11CC11" }, // Neon lime
-      "Other": { color: "#FFFFFF", outline: "#CCCCCC" }, // White
-      "Unknown": { color: "#6666FF", outline: "#4444CC" } // Neon blue
+    const structureGroups = {
+      "All": { color: "#FFFFFF", outline: "#CCCCCC" },
+      "Main": { color: "#00FF99", outline: "#00CC77" },
+      "Service Lateral": { color: "#FF00CC", outline: "#CC0099" }
     };
 
     function fetchDroughtData() {
@@ -404,7 +443,7 @@
           document.querySelectorAll('.structure-btn').forEach(btn => btn.classList.remove('active'));
           button.classList.add('active');
           selectedStructureGroup = button.getAttribute('data-type') === "All" ? "All" :
-                                   button.getAttribute('data-type') === "Main" ? "SewerMain" : "ServiceLateral";
+                                   button.getAttribute('data-type') === "Main" ? "Main" : "Service Lateral";
           updateChartWithCurrentPeriod();
           updateMap();
         });
@@ -516,8 +555,8 @@
 
     function aggregateSSOData(features, period) {
       let filteredFeatures = features;
-      if (selectedStructureGroup === "SewerMain") filteredFeatures = features.filter(f => sewerMainTypes.includes(f.attributes.STRUCTURETYPE));
-      else if (selectedStructureGroup === "ServiceLateral") filteredFeatures = features.filter(f => !sewerMainTypes.includes(f.attributes.STRUCTURETYPE) || !f.attributes.STRUCTURETYPE);
+      if (selectedStructureGroup === "Main") filteredFeatures = features.filter(f => sewerMainTypes.includes(f.attributes.STRUCTURETYPE));
+      else if (selectedStructureGroup === "Service Lateral") filteredFeatures = features.filter(f => !sewerMainTypes.includes(f.attributes.STRUCTURETYPE) || !f.attributes.STRUCTURETYPE);
       filteredFeatures = selectedCauses.size === 0 || selectedCauses.size === uniqueCauses.length ? filteredFeatures : filteredFeatures.filter(f => selectedCauses.has(f.attributes.CAUSE || 'Unknown'));
 
       const groups = {};
@@ -552,9 +591,9 @@
       if (period === 'weekly') {
         endDate.setDate(startDate.getDate() + 6);
       } else if (period === 'monthly') {
-        endDate.setMonth(startDate.getMonth() + 1, 0); // Last day of the month
+        endDate.setMonth(startDate.getMonth() + 1, 0);
       } else if (period === 'yearly') {
-        endDate.setFullYear(startDate.getFullYear() + 1, 11, 31); // Last day of the year
+        endDate.setFullYear(startDate.getFullYear() + 1, 11, 31);
       }
       return { start: startDate, end: endDate };
     }
@@ -614,32 +653,36 @@
           renderer: {
             type: "unique-value",
             valueExpression: `
-              var cause = Lower($feature.CAUSE);
-              if (IsEmpty(cause) || cause == 'unknown') return 'Unknown';
-              if (cause like '%grease blockage%') return 'Grease';
-              if (cause like '%rags/wipes%') return 'Rags/Wipes';
-              if (cause like '%roots%') return 'Roots';
-              if (cause like '%structural failure%' || cause like '%structural blockage%') return 'Structural Issues';
-              if (cause like '%temporary blockage%') return 'Blockages';
-              if (cause like '%wet weather%') return 'Wet Weather';
-              if (cause like '%pump/lift station%' || cause like '%wwtp%' || cause like '%power outage%') return 'Lift Station/Treatment Plant/Power';
-              if (cause like '%cross connection%' || cause like '%cross-connection%') return 'Cross Connections';
-              return 'Other';
+              var structureType = $feature.STRUCTURETYPE;
+              if (IsEmpty(structureType)) return 'Service Lateral';
+              if (Includes(['Manhole', 'Lift Station', 'Gravity Main', 'Force Main', 'Treatment Plant'], structureType)) return 'Main';
+              return 'Service Lateral';
             `,
-            uniqueValueInfos: Object.entries(causeGroups).map(([group, { color, outline }]) => ({
-              value: group,
-              symbol: {
-                type: "simple-marker",
-                color: color,
-                size: 8,
-                outline: { color: outline, width: 1.5 }
+            uniqueValueInfos: [
+              {
+                value: "Main",
+                symbol: {
+                  type: "simple-marker",
+                  color: structureGroups["Main"].color,
+                  size: 8,
+                  outline: { color: structureGroups["Main"].outline, width: 1.5 }
+                }
+              },
+              {
+                value: "Service Lateral",
+                symbol: {
+                  type: "simple-marker",
+                  color: structureGroups["Service Lateral"].color,
+                  size: 8,
+                  outline: { color: structureGroups["Service Lateral"].outline, width: 1.5 }
+                }
               }
-            })),
+            ],
             defaultSymbol: { 
               type: "simple-marker", 
-              color: causeGroups["Unknown"].color, 
+              color: structureGroups["All"].color, 
               size: 8, 
-              outline: { color: causeGroups["Unknown"].outline, width: 1.5 }
+              outline: { color: structureGroups["All"].outline, width: 1.5 }
             }
           }
         });
@@ -652,19 +695,19 @@
         mapView = new MapView({
           container: "map",
           map: map,
-          center: [-95.3632715, 29.7632836], // Houston, TX
+          center: [-95.3632715, 29.7632836],
           zoom: 10
         });
 
         const legend = new Legend({
           view: mapView,
-          layerInfos: [{ layer: ssoLayer, title: "SSO Events by Cause" }]
+          layerInfos: [{ layer: ssoLayer, title: "SSO Events by Structure Type" }]
         });
 
         const legendExpand = new Expand({
           view: mapView,
           content: legend,
-          expanded: true,
+          expanded: false,
           expandTooltip: "Show Legend",
           collapseTooltip: "Hide Legend"
         });
@@ -695,9 +738,9 @@
           ssoWhereClause += ` AND STARTDATE >= '${startStr}' AND STARTDATE <= '${endStr}'`;
         }
 
-        if (selectedStructureGroup === "SewerMain") {
+        if (selectedStructureGroup === "Main") {
           ssoWhereClause += ` AND STRUCTURETYPE IN ('${sewerMainTypes.join("','")}')`;
-        } else if (selectedStructureGroup === "ServiceLateral") {
+        } else if (selectedStructureGroup === "Service Lateral") {
           ssoWhereClause += ` AND (STRUCTURETYPE NOT IN ('${sewerMainTypes.join("','")}') OR STRUCTURETYPE IS NULL)`;
         }
 
@@ -708,6 +751,54 @@
 
         ssoLayer.definitionExpression = ssoWhereClause;
       });
+    }
+
+    function toggleMapVisibility() {
+      const mapContainer = document.querySelector(".map-container");
+      const contentWrapper = document.querySelector(".content-wrapper");
+      const chartContainer = document.querySelector(".chart-container");
+
+      mapVisible = !mapVisible; // Toggle the visibility state
+      mapContainer.style.display = mapVisible ? "block" : "none";
+      document.getElementById("toggleMapBtn").textContent = mapVisible ? "Hide Map" : "Show Map";
+
+      // Ensure content-wrapper's margin is respected by setting explicit heights
+      if (window.innerWidth > 768) {
+        // Desktop view
+        if (!mapVisible) {
+          // When map is hidden, chart takes full space but respects margins
+          contentWrapper.style.flexDirection = "row"; // Keep row layout
+          chartContainer.style.width = "100%";
+          chartContainer.style.height = "calc(100% - 4px)"; // Account for content-wrapper's 15px top/bottom margin
+          chartContainer.style.maxHeight = "calc(100% - 4px)";
+          mapContainer.style.width = "0";
+          mapContainer.style.height = "0";
+          mapContainer.style.maxHeight = "0";
+        } else {
+          // When map is shown, revert to row layout
+          contentWrapper.style.flexDirection = "row";
+          chartContainer.style.width = "auto";
+          chartContainer.style.height = "100%";
+          chartContainer.style.maxHeight = "100%";
+          mapContainer.style.width = "auto";
+          mapContainer.style.height = "100%";
+          mapContainer.style.maxHeight = "100%";
+        }
+      } else {
+        // Mobile view
+        contentWrapper.style.flexDirection = "column";
+        chartContainer.style.width = "100%";
+        chartContainer.style.height = mapVisible ? "50vh" : "calc(100% - 30px)"; // Account for content-wrapper's margin
+        chartContainer.style.maxHeight = mapVisible ? "50vh" : "calc(100% - 30px)";
+        mapContainer.style.width = "100%";
+        mapContainer.style.height = mapVisible ? "50vh" : "0";
+        mapContainer.style.maxHeight = mapVisible ? "50vh" : "0";
+      }
+
+      // Force chart to resize
+      if (myChart) {
+        myChart.resize();
+      }
     }
 
     Promise.all([fetchDroughtData(), fetchSSOData()])
@@ -794,7 +885,7 @@
                 const aggSSO = aggregateSSOData(rawSSOFeatures, currentPeriod);
                 selectedDate = aggSSO.reduce((prev, curr) => 
                   Math.abs(curr.date - selectedDate) < Math.abs(prev.date - selectedDate) ? curr : prev
-                ).date; // Snap to nearest SSO period date
+                ).date;
                 updateChartWithCurrentPeriod();
                 updateMap();
               }
@@ -803,6 +894,7 @@
         });
 
         initializeMap();
+        document.getElementById("toggleMapBtn").addEventListener("click", toggleMapVisibility);
       })
       .catch(error => console.error("Error initializing:", error));
 
@@ -817,6 +909,34 @@
       }
       if (mapView) mapView.goTo({ center: [-95.3632715, 29.7632836], zoom: 10 });
       updateMap();
+    });
+
+    // Ensure chart resizes on window resize and adjust layout
+    window.addEventListener('resize', () => {
+      if (myChart) {
+        myChart.resize();
+      }
+      const contentWrapper = document.querySelector(".content-wrapper");
+      const chartContainer = document.querySelector(".chart-container");
+      const mapContainer = document.querySelector(".map-container");
+
+      if (window.innerWidth <= 768) {
+        contentWrapper.style.flexDirection = "column";
+        chartContainer.style.width = "100%";
+        chartContainer.style.height = mapVisible ? "50vh" : "calc(100% - 30px)"; // Account for content-wrapper's 15px top/bottom margin
+        chartContainer.style.maxHeight = mapVisible ? "50vh" : "calc(100% - 30px)";
+        mapContainer.style.width = "100%";
+        mapContainer.style.height = mapVisible ? "50vh" : "0";
+        mapContainer.style.maxHeight = mapVisible ? "50vh" : "0";
+      } else {
+        contentWrapper.style.flexDirection = "row";
+        chartContainer.style.width = mapVisible ? "auto" : "100%";
+        chartContainer.style.height = mapVisible ? "100%" : "calc(100% - 30px)"; // Account for content-wrapper's margin
+        chartContainer.style.maxHeight = mapVisible ? "100%" : "calc(100% - 30px)";
+        mapContainer.style.width = mapVisible ? "auto" : "0";
+        mapContainer.style.height = mapVisible ? "100%" : "0";
+        mapContainer.style.maxHeight = mapVisible ? "100%" : "0";
+      }
     });
   </script>
 </body>
