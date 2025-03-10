@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>COH - Sewer Overflow Awareness</title>
+  <!-- Chart.js + date adapter + zoom plugin via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2"></script>
+  <!-- ArcGIS JS API -->
+  <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/dark/main.css">
+  <script src="https://js.arcgis.com/4.29/"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      color: #e0e0e0;
+      font-family: 'Orbitron', 'Segoe UI', sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      perspective: 1000px;
+    }
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron&display=swap');
+
+    .container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+    .sidebar {
+      width: 250px; /* Reduced from 300px */
+      padding: 15px; /* Reduced from 25px */
+      background: rgba(255, 255, 255, 0.05);
+      border-right: 2px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      height: 100%;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    .sidebar h3 {
+      font-size: 1.4em; /* Slightly smaller */
+      margin-bottom: 20px;
+      color: #00d4ff;
+      text-align: left;
+      text-shadow: 0 0 10px #00d4ff, 0 0 20px #00d4ff;
+      border-bottom: 2px solid #00d4ff;
+      padding-bottom: 8px;
+    }
+    .main-content {
+      flex: 1;
+      padding: 15px; /* Reduced from 30px */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transform: translateZ(20px);
+      transition: transform 0.3s ease;
+      overflow-y: auto;
+    }
+    .content-wrapper {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      max-width: 1600px; /* Increased from 1400px for wider view */
+      gap: 15px; /* Reduced from 20px */
+      height: calc(100% - 80px); /* Adjusted to fit reduced padding */
+    }
+    .chart-container, .map-container {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 212, 255, 0.2);
+      padding: 15px; /* Reduced from 20px */
+      transform: rotateX(-5deg) translateZ(30px);
+      overflow: hidden;
+      height: 100%;
+    }
+    canvas, #map {
+      width: 100% !important;
+      height: 100% !important;
+      max-height: 650px; /* Slightly increased for better fit */
+      border-radius: 10px;
+      box-shadow: inset 0 0 15px rgba(0, 212, 255, 0.3);
+    }
+    button {
+      padding: 8px 18px; /* Slightly smaller */
+      font-size: 15px;
+      cursor: pointer;
+      margin: 4px;
+      background: linear-gradient(45deg, #00d4ff, #007bff);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 8px 20px rgba(0, 212, 255, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.3);
+      background: linear-gradient(45deg, #00d4ff, #0056b3);
+    }
+    button.selected {
+      background: linear-gradient(45deg, #ff00cc, #ff6699);
+      box-shadow: 0 8px 20px rgba(255, 0, 204, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.3);
+      transform: scale(1.05);
+    }
+    .checkbox-group {
+      margin-bottom: 12px; /* Reduced from 15px */
+    }
+    .checkbox-group summary {
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1em; /* Slightly smaller */
+      padding: 8px 12px; /* Reduced padding */
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+      border-radius: 8px 8px 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      text-align: left;
+    }
+    .checkbox-group summary:hover {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+      transform: translateZ(5px);
+    }
+    .checkbox-group summary::after {
+      content: '▼';
+      font-size: 0.9em;
+      margin-left: 8px;
+      transition: transform 0.3s ease;
+    }
+    .checkbox-group[open] summary::after {
+      transform: rotate(180deg);
+    }
+    .checkbox-group input[type="checkbox"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px; /* Slightly smaller */
+      height: 18px;
+      min-width: 18px;
+      min-height: 18px;
+      margin-right: 8px;
+      vertical-align: middle;
+      position: relative;
+      cursor: pointer;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      border: 2px solid #00d4ff;
+      border-radius: 5px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 212, 255, 0.3);
+      transition: all 0.2s ease;
+    }
+    .checkbox-group input[type="checkbox"]:checked {
+      background: linear-gradient(135deg, #00d4ff, #007bff);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 212, 255, 0.5);
+    }
+    .checkbox-group input[type="checkbox"]:checked::after {
+      content: "✔";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 12px;
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+    .checkbox-group input[type="checkbox"]:hover {
+      transform: translateY(-2px) scale(1.1);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 4px 8px rgba(0, 212, 255, 0.4);
+    }
+    .checkbox-group label {
+      display: flex;
+      align-items: center;
+      padding: 6px 12px; /* Reduced padding */
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s ease;
+      text-align: left;
+    }
+    .checkbox-group details label {
+      padding-left: 30px; /* Adjusted */
+    }
+    .checkbox-group label:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateZ(3px);
+    }
+    .checkbox-group label:last-child {
+      border-bottom: none;
+      border-radius: 0 0 8px 8px;
+    }
+    h1 {
+      font-size: 1.8em; /* Slightly smaller */
+      color: #00d4ff;
+      text-shadow: 0 0 15px #00d4ff, 0 0 30px #00d4ff;
+      margin-bottom: 8px; /* Reduced */
+      text-align: center;
+    }
+    p {
+      font-size: 0.9em; /* Slightly smaller */
+      color: #b0b0b0;
+      margin-bottom: 15px; /* Reduced */
+      text-align: center;
+    }
+    .switch-container {
+      margin-bottom: 12px; /* Reduced */
+      padding: 6px 0; /* Adjusted */
+      background: transparent;
+      text-align: center;
+    }
+    .structure-buttons {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px; /* Reduced */
+    }
+    .structure-btn {
+      flex: 1;
+      padding: 6px 10px; /* Reduced */
+      font-size: 13px; /* Smaller */
+      background: linear-gradient(45deg, #1a1a2e, #16213e);
+      border: 2px solid #00d4ff;
+      border-radius: 8px;
+      color: #e0e0e0;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+    .structure-btn:hover {
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0, 212, 255, 0.6);
+    }
+    .structure-btn.active {
+      background: linear-gradient(45deg, #00d4ff, #007bff);
+      color: #fff;
+      transform: scale(1.05);
+      box-shadow: 0 6px 15px rgba(0, 212, 255, 0.8);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <h3>SSO by Struct. Type</h3>
+      <div class="switch-container">
+        <div class="structure-buttons">
+          <button class="structure-btn active" data-type="All" title="Show all SSO Structure types">All</button>
+          <button class="structure-btn" data-type="Main" title="Show SSO from Main Sewer">Main</button>
+          <button class="structure-btn" data-type="Lateral" title="Show SSO from Service Laterals">SLat</button>
+        </div>
+      </div>
+      <h3>SSO by Cause</h3>
+      <div id="causeCheckboxes"></div>
+    </div>
+    <div class="main-content">
+      <h1>COH - Sewer Overflow Awareness</h1>
+      <p>Click chart to update map date; Zoom/pan chart or map, then click <em>Reset Zoom</em></p>
+      <div>
+        <button id="weeklyBtn">Weekly</button>
+        <button id="monthlyBtn" class="selected">Monthly</button>
+        <button id="yearlyBtn">Yearly</button>
+        <button id="resetZoomBtn">Reset Zoom</button>
+      </div>
+      <div class="content-wrapper">
+        <div class="chart-container">
+          <canvas id="droughtChart"></canvas>
+        </div>
+        <div class="map-container">
+          <div id="map"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const droughtApiUrl = "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/US_Drought_Intensity_v1/FeatureServer/1/query" +
+      "?where=admin_fips%3D48201" +
+      "&outFields=*" +
+      "&f=json";
+    const ssoApiUrl = "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/RSSO_Package/FeatureServer/0/query";
+
+    let rawDroughtData = [];
+    let rawSSOFeatures = [];
+    let myChart, mapView;
+    let uniqueCauses = [];
+    let selectedCauses = new Set();
+    let selectedStructureGroup = "All";
+    let currentPeriod = 'monthly';
+    let selectedDate = null;
+
+    const sewerMainTypes = ["Manhole", "Lift Station", "Gravity Main", "Force Main", "Treatment Plant"];
+
+    const specialWeatherEvents = [
+      { event: "Tropical Storm Imelda", date: new Date("2019-09-19"), emoji: "⛈️" },
+      { event: "Hurricane Laura (Outer Bands)", date: new Date("2020-08-27"), emoji: "🌀" },
+      { event: "Hurricane Beta (Outer Bands)", date: new Date("2020-09-21"), emoji: "🌀" },
+      { event: "Winter Storm Uri", date: new Date("2021-02-15"), emoji: "❄️" },
+      { event: "Hurricane Nicholas", date: new Date("2021-09-14"), emoji: "🌀" },
+      { event: "Severe Thunderstorms and Tornadoes", date: new Date("2023-01-24"), emoji: "🌪️" },
+      { event: "Extreme Heat and Drought", date: new Date("2023-08-01"), emoji: "☀️" },
+      { event: "Hurricane Harvey Anniversary Flooding", date: new Date("2023-08-27"), emoji: "⛈️" },
+      { event: "Hurricane Beryl", date: new Date("2024-07-08"), emoji: "🌀" },
+      { event: "Derecho", date: new Date("2024-05-16"), emoji: "💨" },
+      { event: "Winter Storm (Snow and Extreme Cold)", date: new Date("2025-01-20"), emoji: "❄️" }
+    ];
+
+    const causeGroups = {
+      "Grease": { color: "#00FF99", outline: "#00CC77" }, // Neon teal-green
+      "Rags/Wipes": { color: "#FF00CC", outline: "#CC0099" }, // Neon magenta
+      "Roots": { color: "#FF9900", outline: "#CC7700" }, // Neon orange
+      "Structural Issues": { color: "#FF3333", outline: "#CC1111" }, // Neon red
+      "Blockages": { color: "#FFFF00", outline: "#CCCC00" }, // Neon yellow
+      "Wet Weather": { color: "#00CCFF", outline: "#0099CC" }, // Neon cyan
+      "Lift Station/Treatment Plant/Power": { color: "#9933FF", outline: "#7711CC" }, // Neon purple
+      "Cross Connections": { color: "#33FF33", outline: "#11CC11" }, // Neon lime
+      "Other": { color: "#FFFFFF", outline: "#CCCCCC" }, // White
+      "Unknown": { color: "#6666FF", outline: "#4444CC" } // Neon blue
+    };
+
+    function fetchDroughtData() {
+      return fetch(droughtApiUrl)
+        .then(response => response.ok ? response.json() : Promise.reject("Drought data error: " + response.status))
+        .then(json => {
+          if (!json.features || json.features.length === 0) throw new Error("No drought features returned");
+          return json.features
+            .map(f => ({
+              date: new Date(f.attributes.ddate),
+              d4: f.attributes.d4 || 0,
+              d3: f.attributes.d3 || 0,
+              d2: f.attributes.d2 || 0,
+              d1: f.attributes.d1 || 0,
+              d0: f.attributes.d0 || 0,
+              none: f.attributes.nothing || 0
+            }))
+            .filter(r => r.date >= new Date("2019-01-01"))
+            .sort((a, b) => a.date - b.date);
+        });
+    }
+
+    function fetchSSOData(resultOffset = 0, accumulated = []) {
+      const queryParams = new URLSearchParams({
+        where: "System LIKE '%ublic%' AND STARTDATE >= date '2019-01-01'",
+        outFields: "*",
+        f: "json",
+        returnGeometry: true,
+        resultOffset: resultOffset,
+        resultRecordCount: 2000,
+        orderByFields: "STARTDATE ASC"
+      });
+
+      return fetch(ssoApiUrl + "?" + queryParams.toString())
+        .then(response => response.ok ? response.json() : Promise.reject("SSO data error: " + response.status))
+        .then(json => {
+          if (!json.features) return accumulated;
+          accumulated.push(...json.features);
+          if (json.exceededTransferLimit) return fetchSSOData(resultOffset + 2000, accumulated);
+          return accumulated;
+        });
+    }
+
+    function normalizeCause(cause) {
+      return cause ? cause.toLowerCase().replace(/–/g, "-").replace(/\s+/g, " ").trim() : "Unknown";
+    }
+
+    function groupCauses(causes) {
+      const grouped = {
+        "Grease": [], "Rags/Wipes": [], "Roots": [], "Structural Issues": [], "Blockages": [],
+        "Wet Weather": [], "Lift Station/Treatment Plant/Power": [], "Cross Connections": [],
+        "Other": [], "Unknown": []
+      };
+
+      causes.forEach(cause => {
+        const normalized = normalizeCause(cause);
+        const original = cause || "Unknown";
+        if (normalized.includes("grease blockage")) grouped["Grease"].push(original);
+        else if (normalized.includes("rags/wipes")) grouped["Rags/Wipes"].push(original);
+        else if (normalized.includes("roots")) grouped["Roots"].push(original);
+        else if (normalized.includes("structural failure") || normalized.includes("structural blockage")) grouped["Structural Issues"].push(original);
+        else if (normalized.includes("temporary blockage")) grouped["Blockages"].push(original);
+        else if (normalized.includes("wet weather")) grouped["Wet Weather"].push(original);
+        else if (normalized.includes("pump/lift station") || normalized.includes("wwtp") || normalized.includes("power outage")) grouped["Lift Station/Treatment Plant/Power"].push(original);
+        else if (normalized.includes("cross connection") || normalized.includes("cross-connection")) grouped["Cross Connections"].push(original);
+        else if (normalized === "unknown") grouped["Unknown"].push(original);
+        else grouped["Other"].push(original);
+      });
+
+      for (const group in grouped) grouped[group].sort();
+      return grouped;
+    }
+
+    function createStructureTypeSwitch() {
+      document.querySelectorAll('.structure-btn').forEach(button => {
+        button.addEventListener('click', () => {
+          document.querySelectorAll('.structure-btn').forEach(btn => btn.classList.remove('active'));
+          button.classList.add('active');
+          selectedStructureGroup = button.getAttribute('data-type') === "All" ? "All" :
+                                   button.getAttribute('data-type') === "Main" ? "SewerMain" : "ServiceLateral";
+          updateChartWithCurrentPeriod();
+          updateMap();
+        });
+      });
+    }
+
+    function createCauseCheckboxes() {
+      uniqueCauses = [...new Set(rawSSOFeatures.map(f => f.attributes.CAUSE))];
+      const groupedCauses = groupCauses(uniqueCauses);
+      const container = document.getElementById("causeCheckboxes");
+
+      const allCheckbox = document.createElement("div");
+      allCheckbox.className = "checkbox-group";
+      allCheckbox.innerHTML = `<label><input type="checkbox" id="cause-all" checked> All</label>`;
+      container.appendChild(allCheckbox);
+
+      const categoryOrder = ["Grease", "Rags/Wipes", "Roots", "Structural Issues", "Blockages",
+                            "Wet Weather", "Lift Station/Treatment Plant/Power", "Cross Connections",
+                            "Other", "Unknown"];
+
+      categoryOrder.forEach(category => {
+        const causes = groupedCauses[category];
+        if (causes.length === 0) return;
+        const details = document.createElement("details");
+        details.className = "checkbox-group";
+        details.innerHTML = `<summary><input type="checkbox" class="category-checkbox" data-category="${category}" checked> ${category}</summary>`;
+        causes.forEach(cause => {
+          details.innerHTML += `<label><input type="checkbox" class="cause-checkbox" data-cause="${cause || 'Unknown'}" checked> ${cause || 'Unknown'}</label>`;
+          selectedCauses.add(cause || 'Unknown');
+        });
+
+        const categoryCheckbox = details.querySelector(".category-checkbox");
+        categoryCheckbox.addEventListener("change", (e) => {
+          const isChecked = e.target.checked;
+          details.querySelectorAll(".cause-checkbox").forEach(cb => {
+            cb.checked = isChecked;
+            const cause = cb.getAttribute("data-cause");
+            isChecked ? selectedCauses.add(cause) : selectedCauses.delete(cause);
+          });
+          updateAllCheckbox();
+          updateChartWithCurrentPeriod();
+          updateMap();
+        });
+
+        details.querySelectorAll(".cause-checkbox").forEach(cb => {
+          cb.addEventListener("change", (e) => {
+            const cause = e.target.getAttribute("data-cause");
+            e.target.checked ? selectedCauses.add(cause) : selectedCauses.delete(cause);
+            const allChecked = [...details.querySelectorAll(".cause-checkbox")].every(c => c.checked);
+            categoryCheckbox.checked = allChecked;
+            updateAllCheckbox();
+            updateChartWithCurrentPeriod();
+            updateMap();
+          });
+        });
+
+        container.appendChild(details);
+      });
+
+      document.getElementById("cause-all").addEventListener("change", (e) => {
+        const isChecked = e.target.checked;
+        container.querySelectorAll(".cause-checkbox, .category-checkbox").forEach(cb => {
+          cb.checked = isChecked;
+          if (cb.classList.contains("cause-checkbox")) {
+            const cause = cb.getAttribute("data-cause");
+            isChecked ? selectedCauses.add(cause) : selectedCauses.delete(cause);
+          }
+        });
+        updateChartWithCurrentPeriod();
+        updateMap();
+      });
+
+      function updateAllCheckbox() {
+        document.getElementById("cause-all").checked = categoryOrder.every(cat => {
+          const catCheckbox = container.querySelector(`[data-category="${cat}"]`);
+          return !catCheckbox || catCheckbox.checked;
+        });
+      }
+    }
+
+    function aggregateData(data, period) {
+      if (period === 'weekly') return data;
+      const groups = {};
+      data.forEach(record => {
+        const date = new Date(record.date);
+        const key = period === 'monthly' ? `${date.getFullYear()}-${date.getMonth() + 1}` : `${date.getFullYear()}`;
+        groups[key] = groups[key] || [];
+        groups[key].push(record);
+      });
+      return Object.entries(groups).map(([key, group]) => {
+        const sum = group.reduce((acc, cur) => ({
+          d4: acc.d4 + cur.d4, d3: acc.d3 + cur.d3, d2: acc.d2 + cur.d2,
+          d1: acc.d1 + cur.d1, d0: acc.d0 + cur.d0, none: acc.none + cur.none
+        }), { d4: 0, d3: 0, d2: 0, d1: 0, d0: 0, none: 0 });
+        const count = group.length;
+        return {
+          date: group[0].date,
+          d4: sum.d4 / count, d3: sum.d3 / count, d2: sum.d2 / count,
+          d1: sum.d1 / count, d0: sum.d0 / count, none: sum.none / count
+        };
+      }).sort((a, b) => a.date - b.date);
+    }
+
+    function getWeekEndDate(date) {
+      const d = new Date(date);
+      d.setDate(d.getDate() + (6 - d.getDay()));
+      return d;
+    }
+
+    function aggregateSSOData(features, period) {
+      let filteredFeatures = features;
+      if (selectedStructureGroup === "SewerMain") filteredFeatures = features.filter(f => sewerMainTypes.includes(f.attributes.STRUCTURETYPE));
+      else if (selectedStructureGroup === "ServiceLateral") filteredFeatures = features.filter(f => !sewerMainTypes.includes(f.attributes.STRUCTURETYPE) || !f.attributes.STRUCTURETYPE);
+      filteredFeatures = selectedCauses.size === 0 || selectedCauses.size === uniqueCauses.length ? filteredFeatures : filteredFeatures.filter(f => selectedCauses.has(f.attributes.CAUSE || 'Unknown'));
+
+      const groups = {};
+      filteredFeatures.forEach(f => {
+        const eventDate = new Date(f.attributes.STARTDATE);
+        let key, repDate;
+        if (period === 'weekly') {
+          const weekEnd = getWeekEndDate(eventDate);
+          key = weekEnd.toISOString();
+          repDate = weekEnd;
+        } else if (period === 'monthly') {
+          key = `${eventDate.getFullYear()}-${eventDate.getMonth() + 1}`;
+          repDate = new Date(eventDate.getFullYear(), eventDate.getMonth(), 1);
+        } else if (period === 'yearly') {
+          key = `${eventDate.getFullYear()}`;
+          repDate = new Date(eventDate.getFullYear(), 0, 1);
+        }
+        groups[key] = groups[key] || { date: repDate, count: 0 };
+        groups[key].count += 1;
+      });
+      return Object.values(groups).sort((a, b) => a.date - b.date);
+    }
+
+    function formatDateForDisplay(date) {
+      const d = new Date(date);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function getPeriodDateRange(date, period) {
+      const startDate = new Date(date);
+      const endDate = new Date(startDate);
+      if (period === 'weekly') {
+        endDate.setDate(startDate.getDate() + 6);
+      } else if (period === 'monthly') {
+        endDate.setMonth(startDate.getMonth() + 1, 0); // Last day of the month
+      } else if (period === 'yearly') {
+        endDate.setFullYear(startDate.getFullYear() + 1, 11, 31); // Last day of the year
+      }
+      return { start: startDate, end: endDate };
+    }
+
+    function updateChart(aggDrought, aggSSO) {
+      myChart.data.datasets[0].data = aggDrought.map(r => ({ x: r.date, y: r.d4 }));
+      myChart.data.datasets[1].data = aggDrought.map(r => ({ x: r.date, y: r.d3 }));
+      myChart.data.datasets[2].data = aggDrought.map(r => ({ x: r.date, y: r.d2 }));
+      myChart.data.datasets[3].data = aggDrought.map(r => ({ x: r.date, y: r.d1 }));
+      myChart.data.datasets[4].data = aggDrought.map(r => ({ x: r.date, y: r.d0 }));
+      myChart.data.datasets[5].data = aggSSO.map(r => ({ x: r.date, y: r.count }));
+      myChart.options.plugins.title.text = `Drought & SSO (${currentPeriod.charAt(0).toUpperCase() + currentPeriod.slice(1)})`;
+      myChart.options.plugins.annotation.annotations = [
+        ...specialWeatherEvents.map((e, i) => ({
+          type: 'label', xValue: e.date, yValue: 100, content: e.emoji, color: '#ffffff', font: { size: 20 }, position: 'center', xAdjust: 0, yAdjust: -5, backgroundColor: 'rgba(0, 0, 0, 0)', borderWidth: 0
+        })),
+        {
+          type: 'line',
+          id: 'cursorLine',
+          mode: 'vertical',
+          scaleID: 'x',
+          value: selectedDate || aggSSO[aggSSO.length - 1].date,
+          borderColor: '#00d4ff',
+          borderWidth: 2,
+          label: {
+            enabled: true,
+            content: selectedDate ? formatDateForDisplay(selectedDate) : 'Latest',
+            position: 'top',
+            backgroundColor: 'rgba(0, 212, 255, 0.8)',
+            font: { size: 12 }
+          }
+        }
+      ];
+      myChart.update();
+    }
+
+    function updateChartWithCurrentPeriod() {
+      const aggDrought = aggregateData(rawDroughtData, currentPeriod);
+      const aggSSO = aggregateSSOData(rawSSOFeatures, currentPeriod);
+      updateChart(aggDrought, aggSSO);
+      document.querySelectorAll("#weeklyBtn, #monthlyBtn, #yearlyBtn").forEach(btn => btn.classList.remove("selected"));
+      document.getElementById(`${currentPeriod}Btn`).classList.add("selected");
+    }
+
+    function initializeMap() {
+      require([
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/layers/FeatureLayer",
+        "esri/widgets/Legend",
+        "esri/widgets/Expand"
+      ], (Map, MapView, FeatureLayer, Legend, Expand) => {
+        const ssoLayer = new FeatureLayer({
+          url: "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/RSSO_Package/FeatureServer/0",
+          outFields: ["*"],
+          definitionExpression: "System LIKE '%ublic%' AND STARTDATE >= '2019-01-01'",
+          renderer: {
+            type: "unique-value",
+            valueExpression: `
+              var cause = Lower($feature.CAUSE);
+              if (IsEmpty(cause) || cause == 'unknown') return 'Unknown';
+              if (cause like '%grease blockage%') return 'Grease';
+              if (cause like '%rags/wipes%') return 'Rags/Wipes';
+              if (cause like '%roots%') return 'Roots';
+              if (cause like '%structural failure%' || cause like '%structural blockage%') return 'Structural Issues';
+              if (cause like '%temporary blockage%') return 'Blockages';
+              if (cause like '%wet weather%') return 'Wet Weather';
+              if (cause like '%pump/lift station%' || cause like '%wwtp%' || cause like '%power outage%') return 'Lift Station/Treatment Plant/Power';
+              if (cause like '%cross connection%' || cause like '%cross-connection%') return 'Cross Connections';
+              return 'Other';
+            `,
+            uniqueValueInfos: Object.entries(causeGroups).map(([group, { color, outline }]) => ({
+              value: group,
+              symbol: {
+                type: "simple-marker",
+                color: color,
+                size: 8,
+                outline: { color: outline, width: 1.5 }
+              }
+            })),
+            defaultSymbol: { 
+              type: "simple-marker", 
+              color: causeGroups["Unknown"].color, 
+              size: 8, 
+              outline: { color: causeGroups["Unknown"].outline, width: 1.5 }
+            }
+          }
+        });
+
+        const map = new Map({
+          basemap: "dark-gray-vector",
+          layers: [ssoLayer]
+        });
+
+        mapView = new MapView({
+          container: "map",
+          map: map,
+          center: [-95.3632715, 29.7632836], // Houston, TX
+          zoom: 10
+        });
+
+        const legend = new Legend({
+          view: mapView,
+          layerInfos: [{ layer: ssoLayer, title: "SSO Events by Cause" }]
+        });
+
+        const legendExpand = new Expand({
+          view: mapView,
+          content: legend,
+          expanded: true,
+          expandTooltip: "Show Legend",
+          collapseTooltip: "Hide Legend"
+        });
+
+        mapView.ui.add(legendExpand, "top-right");
+
+        mapView.when(() => updateMap());
+      });
+    }
+
+    function updateMap() {
+      if (!mapView) return;
+      require(["esri/layers/FeatureLayer"], (FeatureLayer) => {
+        const ssoLayer = mapView.map.layers.find(layer => layer.url.includes("RSSO_Package"));
+        let ssoWhereClause = "System LIKE '%ublic%' AND STARTDATE >= '2019-01-01'";
+        
+        if (selectedDate) {
+          const { start, end } = getPeriodDateRange(selectedDate, currentPeriod);
+          const startStr = formatDateForDisplay(start);
+          const endStr = formatDateForDisplay(end);
+          ssoWhereClause += ` AND STARTDATE >= '${startStr}' AND STARTDATE <= '${endStr}'`;
+        } else {
+          const aggSSO = aggregateSSOData(rawSSOFeatures, currentPeriod);
+          const latestDate = aggSSO[aggSSO.length - 1].date;
+          const { start, end } = getPeriodDateRange(latestDate, currentPeriod);
+          const startStr = formatDateForDisplay(start);
+          const endStr = formatDateForDisplay(end);
+          ssoWhereClause += ` AND STARTDATE >= '${startStr}' AND STARTDATE <= '${endStr}'`;
+        }
+
+        if (selectedStructureGroup === "SewerMain") {
+          ssoWhereClause += ` AND STRUCTURETYPE IN ('${sewerMainTypes.join("','")}')`;
+        } else if (selectedStructureGroup === "ServiceLateral") {
+          ssoWhereClause += ` AND (STRUCTURETYPE NOT IN ('${sewerMainTypes.join("','")}') OR STRUCTURETYPE IS NULL)`;
+        }
+
+        if (selectedCauses.size > 0 && selectedCauses.size < uniqueCauses.length) {
+          const causesArray = Array.from(selectedCauses).map(c => c === "Unknown" ? "CAUSE IS NULL" : `CAUSE = '${c}'`);
+          ssoWhereClause += ` AND (${causesArray.join(" OR ")})`;
+        }
+
+        ssoLayer.definitionExpression = ssoWhereClause;
+      });
+    }
+
+    Promise.all([fetchDroughtData(), fetchSSOData()])
+      .then(([droughtFeatures, ssoFeatures]) => {
+        rawDroughtData = droughtFeatures;
+        rawSSOFeatures = ssoFeatures;
+
+        createStructureTypeSwitch();
+        createCauseCheckboxes();
+
+        const aggDrought = aggregateData(rawDroughtData, 'monthly');
+        const aggSSO = aggregateSSOData(rawSSOFeatures, 'monthly');
+
+        const ctx = document.getElementById("droughtChart").getContext("2d");
+        myChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            datasets: [
+              { label: "Exceptional", data: aggDrought.map(r => ({ x: r.date, y: r.d4 })), borderColor: "#4F0012", backgroundColor: "#4F0012", fill: "origin", tension: 0.1, pointRadius: 0, order: 1 },
+              { label: "Extreme", data: aggDrought.map(r => ({ x: r.date, y: r.d3 })), borderColor: "#9C0924", backgroundColor: "#9C0924", fill: "-1", tension: 0.1, pointRadius: 0, order: 1 },
+              { label: "Severe", data: aggDrought.map(r => ({ x: r.date, y: r.d2 })), borderColor: "#EC692D", backgroundColor: "#EC692D", fill: "-1", tension: 0.1, pointRadius: 0, order: 1 },
+              { label: "Moderate", data: aggDrought.map(r => ({ x: r.date, y: r.d1 })), borderColor: "#F09D33", backgroundColor: "#F09D33", fill: "-1", tension: 0.1, pointRadius: 0, order: 1 },
+              { label: "Abn. Dry", data: aggDrought.map(r => ({ x: r.date, y: r.d0 })), borderColor: "#FDEFA4", backgroundColor: "#FDEFA4", fill: "-1", tension: 0.1, pointRadius: 0, order: 1 },
+              { label: "SSO Count", data: aggSSO.map(r => ({ x: r.date, y: r.count })), borderColor: "#00FF00", backgroundColor: "#00FF00", fill: false, tension: 0, pointRadius: 3, yAxisID: "y2", order: 0 },
+              {
+                label: "Special Weather Events",
+                data: specialWeatherEvents.map(event => ({ x: event.date, y: 100, event: event.event, date: event.date.toISOString().split('T')[0] })),
+                type: "scatter",
+                yAxisID: "y",
+                pointRadius: 0,
+                pointHoverRadius: 50,
+                showLine: false,
+                order: -1,
+                tooltip: { callbacks: { label: ctx => `${ctx.raw.date} | ${ctx.raw.event}` } }
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: "index", intersect: false },
+            scales: {
+              x: { type: "time", time: { unit: "month", tooltipFormat: "yyyy-MM-dd" }, ticks: { color: "#dddddd" }, grid: { color: "#444" } },
+              y: { stacked: true, min: 0, suggestedMax: 110, ticks: { color: "#dddddd" }, grid: { color: "#444" } },
+              y2: { type: "linear", position: "right", ticks: { color: "#dddddd" }, grid: { drawOnChartArea: false } }
+            },
+            plugins: {
+              legend: { labels: { color: "#dddddd" }, position: "top" },
+              title: { display: true, text: "Drought & SSO (Monthly)" },
+              zoom: { zoom: { wheel: { enabled: true }, drag: { enabled: true }, mode: "x" }, pan: { enabled: true, mode: "x" } },
+              annotation: {
+                annotations: [
+                  ...specialWeatherEvents.map((e, i) => ({
+                    type: 'label', xValue: e.date, yValue: 100, content: e.emoji, color: '#ffffff', font: { size: 20 }, position: 'center', xAdjust: 0, yAdjust: -5, backgroundColor: 'rgba(0, 0, 0, 0)', borderWidth: 0
+                  })),
+                  {
+                    type: 'line',
+                    id: 'cursorLine',
+                    mode: 'vertical',
+                    scaleID: 'x',
+                    value: aggSSO[aggSSO.length - 1].date,
+                    borderColor: '#00d4ff',
+                    borderWidth: 2,
+                    label: {
+                      enabled: true,
+                      content: 'Latest',
+                      position: 'top',
+                      backgroundColor: 'rgba(0, 212, 255, 0.8)',
+                      font: { size: 12 }
+                    }
+                  }
+                ]
+              },
+              tooltip: {
+                mode: "index",
+                intersect: false,
+                callbacks: { label: ctx => ctx.dataset.label === "Special Weather Events" ? `${ctx.raw.date} | ${ctx.raw.event}` : `${ctx.dataset.label}: ${ctx.raw.y}` }
+              }
+            },
+            onClick: (event, elements, chart) => {
+              const xValue = chart.scales.x.getValueForPixel(event.x);
+              if (xValue) {
+                selectedDate = new Date(xValue);
+                const aggSSO = aggregateSSOData(rawSSOFeatures, currentPeriod);
+                selectedDate = aggSSO.reduce((prev, curr) => 
+                  Math.abs(curr.date - selectedDate) < Math.abs(prev.date - selectedDate) ? curr : prev
+                ).date; // Snap to nearest SSO period date
+                updateChartWithCurrentPeriod();
+                updateMap();
+              }
+            }
+          }
+        });
+
+        initializeMap();
+      })
+      .catch(error => console.error("Error initializing:", error));
+
+    document.getElementById("weeklyBtn").addEventListener("click", () => { currentPeriod = 'weekly'; updateChartWithCurrentPeriod(); updateMap(); });
+    document.getElementById("monthlyBtn").addEventListener("click", () => { currentPeriod = 'monthly'; updateChartWithCurrentPeriod(); updateMap(); });
+    document.getElementById("yearlyBtn").addEventListener("click", () => { currentPeriod = 'yearly'; updateChartWithCurrentPeriod(); updateMap(); });
+    document.getElementById("resetZoomBtn").addEventListener("click", () => {
+      if (myChart) {
+        myChart.resetZoom();
+        selectedDate = null;
+        updateChartWithCurrentPeriod();
+      }
+      if (mapView) mapView.goTo({ center: [-95.3632715, 29.7632836], zoom: 10 });
+      updateMap();
+    });
+  </script>
+</body>
+</html>
