@@ -80,7 +80,7 @@
       border-radius: 15px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 212, 255, 0.2);
       padding: 15px;
-      transform: rotateX(-5deg) translateZ(30px);
+      transform: rotateX(-5deg) translateZ(4px);
       overflow: hidden;
       height: 100%;
       max-height: 100%;
@@ -249,7 +249,20 @@
       transform: scale(1.05);
       box-shadow: 0 6px 15px rgba(0, 212, 255, 0.8);
     }
-
+    /* Footer Styles */
+    .footer {
+      width: 100%;
+      text-align: center;
+      padding: 10px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #00d4ff;
+      text-shadow: 0 0 8px #00d4ff, 0 0 16px #00d4ff;
+    }
+    .footer span {
+      color: red;
+      font-size: 16px;
+    }
     /* Media query for mobile responsiveness */
     @media (max-width: 768px) {
       .container {
@@ -324,6 +337,9 @@
           <div id="map"></div>
         </div>
       </div>
+	    <div class="footer">
+    Made with <span>&#10084;</span> by WWO - H.Ng - 2025
+  </div>
     </div>
   </div>
 
@@ -788,8 +804,8 @@
         // Mobile view
         contentWrapper.style.flexDirection = "column";
         chartContainer.style.width = "100%";
-        chartContainer.style.height = mapVisible ? "50vh" : "calc(100% - 30px)"; // Account for content-wrapper's margin
-        chartContainer.style.maxHeight = mapVisible ? "50vh" : "calc(100% - 30px)";
+        chartContainer.style.height = mapVisible ? "50vh" : "calc(100% - 4px)"; // Account for content-wrapper's margin
+        chartContainer.style.maxHeight = mapVisible ? "50vh" : "calc(100% - 4px)";
         mapContainer.style.width = "100%";
         mapContainer.style.height = mapVisible ? "50vh" : "0";
         mapContainer.style.maxHeight = mapVisible ? "50vh" : "0";
@@ -923,16 +939,16 @@
       if (window.innerWidth <= 768) {
         contentWrapper.style.flexDirection = "column";
         chartContainer.style.width = "100%";
-        chartContainer.style.height = mapVisible ? "50vh" : "calc(100% - 30px)"; // Account for content-wrapper's 15px top/bottom margin
-        chartContainer.style.maxHeight = mapVisible ? "50vh" : "calc(100% - 30px)";
+        chartContainer.style.height = mapVisible ? "50vh" : "calc(100% - 4px)"; // Account for content-wrapper's 15px top/bottom margin
+        chartContainer.style.maxHeight = mapVisible ? "50vh" : "calc(100% - 4px)";
         mapContainer.style.width = "100%";
         mapContainer.style.height = mapVisible ? "50vh" : "0";
         mapContainer.style.maxHeight = mapVisible ? "50vh" : "0";
       } else {
         contentWrapper.style.flexDirection = "row";
         chartContainer.style.width = mapVisible ? "auto" : "100%";
-        chartContainer.style.height = mapVisible ? "100%" : "calc(100% - 30px)"; // Account for content-wrapper's margin
-        chartContainer.style.maxHeight = mapVisible ? "100%" : "calc(100% - 30px)";
+        chartContainer.style.height = "calc(100% - 4px)"; 
+        chartContainer.style.maxHeight = "calc(100% - 4px)"
         mapContainer.style.width = mapVisible ? "auto" : "0";
         mapContainer.style.height = mapVisible ? "100%" : "0";
         mapContainer.style.maxHeight = mapVisible ? "100%" : "0";
