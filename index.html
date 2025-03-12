@@ -129,26 +129,26 @@
     button.selected:hover {
       background: linear-gradient(45deg, #ff33dd, #ff88aa);
     }
-	.download-btn {
-	  padding: 0;
-	  font-size: 16px;
-	  background: linear-gradient(45deg, #00d4ff, #007bff);
-	  border: 1px solid rgba(0, 212, 255, 0.6);
-	  border-radius: 6px;
-	  display: inline-flex;
-	  align-items: center;
-	  justify-content: center;
-	  box-shadow: 0 2px 6px rgba(0, 212, 255, 0.4);
-	  transition: all 0.2s ease;
-	  vertical-align: middle;
-	  margin-left: 0.5rem;
-	}
-	.download-btn:hover {
-	  transform: translateY(-1px);
-	  box-shadow: 0 4px 10px rgba(0, 212, 255, 0.6);
-	  background: linear-gradient(45deg, #00eaff, #008cff);
-	  border-color: rgba(0, 212, 255, 0.8);
-	}
+    .download-btn {
+      padding: 0;
+      font-size: 16px;
+      background: linear-gradient(45deg, #00d4ff, #007bff);
+      border: 1px solid rgba(0, 212, 255, 0.6);
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0, 212, 255, 0.4);
+      transition: all 0.2s ease;
+      vertical-align: middle;
+      margin-left: 0.5rem;
+    }
+    .download-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0, 212, 255, 0.6);
+      background: linear-gradient(45deg, #00eaff, #008cff);
+      border-color: rgba(0, 212, 255, 0.8);
+    }
     .checkbox-group {
       margin-bottom: 0.5rem;
     }
@@ -435,6 +435,52 @@
       transform: scale(1.1);
     }
 
+    /* Play History Button */
+    .play-history-btn {
+      padding: 0.5rem 0.8rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      margin: 0.5rem 0 0;
+      background: linear-gradient(45deg, #ffcc00, #ff6600);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgba(255, 204, 0, 0.4);
+      transition: all 0.2s ease;
+      font-family: 'Orbitron', sans-serif;
+      display: block;
+      width: 100%;
+      text-align: center;
+    }
+    .play-history-btn:hover {
+      transform: translateY(-1px) scale(1.03);
+      box-shadow: 0 4px 12px rgba(255, 204, 0, 0.6);
+      background: linear-gradient(45deg, #ffdd33, #ff8833);
+    }
+    .play-history-btn.playing {
+      background: linear-gradient(45deg, #ff3366, #cc0033);
+      box-shadow: 0 4px 12px rgba(255, 51, 102, 0.6);
+    }
+    .play-history-btn.playing:hover {
+      background: linear-gradient(45deg, #ff5588, #dd2255);
+    }
+
+    /* SSO History Display */
+    .sso-history {
+      width: 100%;
+      text-align: center;
+      padding: 0.5rem;
+      font-size: 0.8rem;
+      color: #00d4ff;
+      text-shadow: 0 0 6px #00d4ff;
+      background: rgba(10, 10, 30, 0.9);
+      border-radius: 4px;
+      margin-top: 0.5rem;
+      display: none;
+    }
+
     /* Desktop Styles */
     @media (min-width: 769px) {
       .container {
@@ -480,10 +526,10 @@
         padding: 0.6rem 1rem;
         font-size: 0.9rem;
       }
-	  .download-btn {
-		padding: 0;
-		font-size: 1.3rem;
-	  }
+      .download-btn {
+        padding: 0;
+        font-size: 1.3rem;
+      }
       h1 {
         font-size: 1.6rem;
       }
@@ -521,6 +567,13 @@
       .event-item .description {
         font-size: 0.9rem;
       }
+      .play-history-btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+      }
+      .sso-history {
+        font-size: 0.9rem;
+      }
     }
   </style>
 </head>
@@ -556,10 +609,11 @@
         </div>
         <h3>SSO by Cause</h3>
         <div id="causeCheckboxes"></div>
-		      <div class="footer">
-  <hr style="border: none; height: 1px; background: linear-gradient(to right, #002855, #0056b3); width: 100%;" />
-  Drought Data source: U.S. Drought Monitor
-      </div>
+        <div class="footer">
+          <hr style="border: none; height: 1px; background: linear-gradient(to right, #002855, #0056b3); width: 100%;" />
+          Drought Data source: U.S. Drought Monitor
+          <button id="playHistoryBtnMobile" class="play-history-btn" style="display: none;">Play History</button>
+        </div>
       </div>
     </details>
     <!-- Desktop Sidebar without <details> -->
@@ -575,10 +629,11 @@
         </div>
         <h3>SSO by Cause</h3>
         <div id="causeCheckboxesDesktop"></div>
-		      <div class="footer">
-  <hr style="border: none; height: 1px; background: linear-gradient(to right, #002855, #0056b3); width: 100%;" />
-  Drought Data source: U.S. Drought Monitor
-      </div>		
+        <div class="footer">
+          <hr style="border: none; height: 1px; background: linear-gradient(to right, #002855, #0056b3); width: 100%;" />
+          Drought Data source: U.S. Drought Monitor
+          <button id="playHistoryBtnDesktop" class="play-history-btn" style="display: none;">Play History</button>
+        </div>
       </div>
     </div>
     <div class="main-content">
@@ -600,6 +655,7 @@
           <div id="map"></div>
         </div>
       </div>
+      <div class="sso-history" id="ssoHistory">[2019-01 -> Current]</div>
       <div class="footer">
         Made with <span>❤</span> by WWO - HNg - 2025 - Disclaimer: Data provided 'as is' for informational use only.
       </div>
@@ -622,6 +678,9 @@
     let currentPeriod = 'monthly';
     let selectedDate = null;
     let mapVisible = true;
+    let isPlaying = false;
+    let animationInterval = null;
+    let currentAnimationDate = new Date("2019-01-01");
 
     const sewerMainTypes = ["Manhole", "Lift Station", "Gravity Main", "Force Main", "Treatment Plant"];
 
@@ -891,6 +950,11 @@
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     }
 
+    function formatMonthForDisplay(date) {
+      const d = new Date(date);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    }
+
     function getPeriodDateRange(date, period) {
       const startDate = new Date(date);
       const endDate = new Date(startDate);
@@ -1070,30 +1134,162 @@
       });
     }
 
+    function getMonthlyDates(startDate, endDate) {
+      const dates = [];
+      let current = new Date(startDate);
+      while (current <= endDate) {
+        dates.push(new Date(current));
+        current.setMonth(current.getMonth() + 1);
+      }
+      return dates;
+    }
+
+function updateMapCumulative(endDate) {
+  if (!mapView) return;
+  require(["esri/layers/FeatureLayer"], (FeatureLayer) => {
+    const ssoLayer = mapView.map.layers.find(layer => layer.url.includes("RSSO_Package"));
+    if (!ssoLayer) return;
+
+    let ssoWhereClause = "System LIKE '%ublic%' AND STARTDATE >= '2019-01-01'";
+    const endStr = formatDateForDisplay(endDate);
+    ssoWhereClause += ` AND STARTDATE <= '${endStr}'`;
+
+    if (selectedStructureGroup === "Main") {
+      ssoWhereClause += ` AND STRUCTURETYPE IN ('${sewerMainTypes.join("','")}')`;
+    } else if (selectedStructureGroup === "Service Lateral") {
+      ssoWhereClause += ` AND (STRUCTURETYPE NOT IN ('${sewerMainTypes.join("','")}') OR STRUCTURETYPE IS NULL)`;
+    }
+
+    if (selectedCauses.size > 0 && selectedCauses.size < uniqueCauses.length) {
+      const causesArray = Array.from(selectedCauses).map(c => c === "Unknown" ? "CAUSE IS NULL" : `CAUSE = '${c}'`);
+      ssoWhereClause += ` AND (${causesArray.join(" OR ")})`;
+    }
+
+    ssoLayer.definitionExpression = ssoWhereClause;
+
+    ssoLayer.renderer = {
+      type: "simple",
+      symbol: {
+        type: "simple-marker",
+        style: "diamond", // Changed from "star" to "diamond"
+        color: [255, 255, 0, 0.9], // Bright yellow core
+        size: 6, // Smaller size
+        outline: {
+          color: [255, 153, 0, 1], // Vibrant orange outline
+          width: 1.5
+        },
+        haloColor: [255, 255, 255, 0.7], // Strong white halo
+        haloSize: 3,
+        effect: "bloom(1.5, 0.5px, 0.1)" // Glowing effect
+      }
+    };
+
+    // Update SSO history display
+  const historyDiv = document.getElementById("ssoHistory");
+  historyDiv.style.display = "block";
+  const structureText = selectedStructureGroup === "All" ? "All Structures" : selectedStructureGroup;
+  let causesText;
+  if (selectedCauses.size === 0 || selectedCauses.size === uniqueCauses.length) {
+    causesText = "All Causes";
+  } else {
+    const groupedCauses = groupCauses(Array.from(selectedCauses));
+    const activeGroups = Object.keys(groupedCauses).filter(group => groupedCauses[group].length > 0);
+    causesText = activeGroups.join(", ");
+  }
+  historyDiv.textContent = `[2019-01 -> ${formatMonthForDisplay(endDate)}] | ${structureText} | ${causesText}`;
+  });
+}
+
+    function resetMapToNormal() {
+      updateMap();
+      if (!mapView) return;
+      require(["esri/layers/FeatureLayer"], (FeatureLayer) => {
+        const ssoLayer = mapView.map.layers.find(layer => layer.url.includes("RSSO_Package"));
+        if (ssoLayer) {
+          ssoLayer.renderer = {
+            type: "unique-value",
+            valueExpression: `
+              var structureType = $feature.STRUCTURETYPE;
+              if (IsEmpty(structureType)) return 'Service Lateral';
+              if (Includes(['Manhole', 'Lift Station', 'Gravity Main', 'Force Main', 'Treatment Plant'], structureType)) return 'Main';
+              return 'Service Lateral';
+            `,
+            uniqueValueInfos: [
+              { value: "Main", symbol: { type: "simple-marker", color: structureGroups["Main"].color, size: 8, outline: { color: structureGroups["Main"].outline, width: 1.5 } } },
+              { value: "Service Lateral", symbol: { type: "simple-marker", color: structureGroups["Service Lateral"].color, size: 8, outline: { color: structureGroups["Service Lateral"].outline, width: 1.5 } } }
+            ],
+            defaultSymbol: { type: "simple-marker", color: structureGroups["All"].color, size: 8, outline: { color: structureGroups["All"].outline, width: 1.5 } }
+          };
+        }
+      });
+      const historyDiv = document.getElementById("ssoHistory");
+      historyDiv.style.display = "none";
+      historyDiv.textContent = "[2019-01 -> Current]";
+    }
+
+    function toggleHistoryAnimation() {
+      const playBtnMobile = document.getElementById("playHistoryBtnMobile");
+      const playBtnDesktop = document.getElementById("playHistoryBtnDesktop");
+      const playBtn = window.innerWidth <= 768 ? playBtnMobile : playBtnDesktop;
+
+      if (!isPlaying) {
+        isPlaying = true;
+        currentAnimationDate = new Date("2019-01-01"); // Reset to start
+        playBtn.textContent = "Pause";
+        playBtn.classList.add("playing");
+        const monthlyDates = getMonthlyDates(new Date("2019-01-01"), new Date());
+        let index = 0;
+
+        animationInterval = setInterval(() => {
+          if (index >= monthlyDates.length) {
+            clearInterval(animationInterval);
+            isPlaying = false;
+            playBtn.textContent = "Play SSO History";
+            playBtn.classList.remove("playing");
+            resetMapToNormal();
+            return;
+          }
+          currentAnimationDate = monthlyDates[index];
+          updateMapCumulative(currentAnimationDate);
+          index++;
+        }, 200);
+      } else {
+        isPlaying = false;
+        playBtn.textContent = "Play SSO History";
+        playBtn.classList.remove("playing");
+        clearInterval(animationInterval);
+        resetMapToNormal();
+      }
+    }
+
     function toggleMapVisibility() {
       const mapContainer = document.querySelector(".map-container");
       const chartContainer = document.querySelector(".chart-container");
       const contentWrapper = document.querySelector(".content-wrapper");
+      const playBtnMobile = document.getElementById("playHistoryBtnMobile");
+      const playBtnDesktop = document.getElementById("playHistoryBtnDesktop");
+      const ssoHistory = document.getElementById("ssoHistory");
 
       mapVisible = !mapVisible;
       mapContainer.style.display = mapVisible ? "block" : "none";
+      playBtnMobile.style.display = mapVisible ? "block" : "none";
+      playBtnDesktop.style.display = mapVisible ? "block" : "none";
+      ssoHistory.style.display = mapVisible && isPlaying ? "block" : "none";
       document.getElementById("toggleMapBtn").textContent = mapVisible ? "Hide Map" : "Show Map";
 
       if (window.innerWidth <= 768) {
-        chartContainer.style.height = mapVisible ? "50vh" : "calc(100vh - 9rem)"; // Adjusted for mobile header + buttons + footer
-        mapContainer.style.height = mapVisible ? "50vh" : "0"; // Explicitly set map height
+        chartContainer.style.height = mapVisible ? "50vh" : "calc(100vh - 9rem)";
+        mapContainer.style.height = mapVisible ? "50vh" : "0";
         contentWrapper.style.flexDirection = "column";
       } else {
         contentWrapper.style.flexDirection = mapVisible ? "row" : "column";
-        chartContainer.style.height = mapVisible ? "100%" : "calc(100% - 1rem)"; // Leaves space for footer
-        mapContainer.style.height = mapVisible ? "100%" : "0"; // Explicitly set map height
+        chartContainer.style.height = mapVisible ? "100%" : "calc(100% - 1rem)";
+        mapContainer.style.height = mapVisible ? "100%" : "0";
       }
 
       if (myChart) myChart.resize();
       if (mapVisible && mapView) {
-        setTimeout(() => {
-          mapView.resize(); // Resize map after a short delay
-        }, 100); // 100ms delay to ensure DOM update
+        setTimeout(() => mapView.resize(), 100);
       }
     }
 
@@ -1112,7 +1308,7 @@
     function showEventsDialog() {
       const dialog = document.getElementById("eventsDialog");
       const eventList = document.getElementById("eventList");
-      eventList.innerHTML = ""; // Clear existing content
+      eventList.innerHTML = "";
 
       const sortedEvents = [...specialWeatherEvents].sort((a, b) => b.date - a.date);
 
@@ -1159,26 +1355,23 @@
       const aggDrought = aggregateData(rawDroughtData, currentPeriod);
       const aggSSO = aggregateSSOData(rawSSOFeatures, currentPeriod);
 
-      // Drought CSV
       let droughtCSV = "Date,Exceptional (D4),Extreme (D3),Severe (D2),Moderate (D1),Abnormally Dry (D0),No Drought\n";
       aggDrought.forEach(row => {
         droughtCSV += `${formatDateForDisplay(row.date)},${row.d4},${row.d3},${row.d2},${row.d1},${row.d0},${row.none}\n`;
       });
 
-      // SSO CSV
       let ssoCSV = "Date,SSO Count\n";
       aggSSO.forEach(row => {
         ssoCSV += `${formatDateForDisplay(row.date)},${row.count}\n`;
       });
 
-      // Download both files
       downloadCSV(droughtCSV, `drought_data_${currentPeriod}_${formatDateForDisplay(new Date())}.csv`);
       downloadCSV(ssoCSV, `sso_data_${currentPeriod}_${formatDateForDisplay(new Date())}.csv`);
     }
 
     document.addEventListener("DOMContentLoaded", () => {
       toggleSidebar();
-      showLoading(); // Show loading overlay at the start
+      showLoading();
       Promise.all([fetchDroughtData(), fetchSSOData()])
         .then(([droughtFeatures, ssoFeatures]) => {
           rawDroughtData = droughtFeatures;
@@ -1281,7 +1474,7 @@
         })
         .then(() => {
           console.log("Initialization complete");
-          hideLoading(); // Hide loading overlay when everything is ready
+          hideLoading();
           document.getElementById("toggleMapBtn").addEventListener("click", toggleMapVisibility);
           document.getElementById("weeklyBtn").addEventListener("click", () => { currentPeriod = 'weekly'; updateChartWithCurrentPeriod(); updateMap(); });
           document.getElementById("monthlyBtn").addEventListener("click", () => { currentPeriod = 'monthly'; updateChartWithCurrentPeriod(); updateMap(); });
@@ -1298,10 +1491,14 @@
           document.getElementById("showEventsBtn").addEventListener("click", showEventsDialog);
           document.getElementById("closeEventsDialog").addEventListener("click", closeEventsDialog);
           document.getElementById("downloadBtn").addEventListener("click", downloadChartData);
+          document.getElementById("playHistoryBtnMobile").addEventListener("click", toggleHistoryAnimation);
+          document.getElementById("playHistoryBtnDesktop").addEventListener("click", toggleHistoryAnimation);
+          document.getElementById("playHistoryBtnMobile").style.display = mapVisible ? "block" : "none";
+          document.getElementById("playHistoryBtnDesktop").style.display = mapVisible ? "block" : "none";
         })
         .catch(error => {
           console.error("Error initializing:", error);
-          hideLoading(); // Hide loading even on error to allow user interaction
+          hideLoading();
           alert("Failed to load data. Please try refreshing the page.");
         });
     });
@@ -1311,6 +1508,9 @@
       const chartContainer = document.querySelector(".chart-container");
       const mapContainer = document.querySelector(".map-container");
       const contentWrapper = document.querySelector(".content-wrapper");
+      const playBtnMobile = document.getElementById("playHistoryBtnMobile");
+      const playBtnDesktop = document.getElementById("playHistoryBtnDesktop");
+      const ssoHistory = document.getElementById("ssoHistory");
 
       if (window.innerWidth <= 768) {
         chartContainer.style.height = mapVisible ? "50vh" : "calc(100vh - 9rem)";
@@ -1321,6 +1521,9 @@
         chartContainer.style.height = mapVisible ? "100%" : "calc(100% - 1rem)";
         mapContainer.style.height = mapVisible ? "100%" : "0";
       }
+      playBtnMobile.style.display = mapVisible ? "block" : "none";
+      playBtnDesktop.style.display = mapVisible ? "block" : "none";
+      ssoHistory.style.display = mapVisible && isPlaying ? "block" : "none";
       if (myChart) myChart.resize();
     });
   </script>
