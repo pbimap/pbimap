@@ -269,6 +269,51 @@
       text-shadow: 0 0 6px #ff3366;
     }
 
+    /* Loading Overlay */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 10, 30, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+    }
+    .loading-text {
+      font-size: 2rem;
+      color: #00d4ff;
+      text-shadow: 0 0 10px #00d4ff, 0 0 20px rgba(0, 212, 255, 0.5);
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      letter-spacing: 2px;
+      animation: pulse 1.5s infinite ease-in-out;
+      position: relative;
+    }
+    .loading-text::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 150%;
+      height: 150%;
+      background: radial-gradient(circle, rgba(0, 212, 255, 0.2) 0%, transparent 70%);
+      transform: translate(-50%, -50%);
+      animation: glow 2s infinite ease-in-out;
+      z-index: -1;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+    }
+    @keyframes glow {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.5; }
+    }
+
     /* Desktop Styles */
     @media (min-width: 769px) {
       .container {
@@ -336,14 +381,22 @@
         padding: 0.4rem 0.5rem;
         font-size: 0.85rem;
       }
+      .loading-text {
+        font-size: 2.5rem;
+      }
     }
   </style>
 </head>
 <body>
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-text">Initializing Data...</div>
+  </div>
+
   <div class="container">
     <!-- Mobile Sidebar with <details> -->
     <details class="sidebar" id="mobile-sidebar">
-      <summary>Controls</summary>
+      <summary>Filter</summary>
       <div class="sidebar-content">
         <h3>SSO by Struct. Type</h3>
         <div class="switch-container">
@@ -434,6 +487,14 @@
       "Service Lateral": { color: "#FF00CC", outline: "#CC0099" }
     };
 
+    function showLoading() {
+      document.getElementById("loadingOverlay").style.display = "flex";
+    }
+
+    function hideLoading() {
+      document.getElementById("loadingOverlay").style.display = "none";
+    }
+
     function fetchDroughtData() {
       return fetch(droughtApiUrl)
         .then(response => response.ok ? response.json() : Promise.reject("Drought data error: " + response.status))
@@ -492,7 +553,7 @@
         if (normalized.includes("grease blockage")) grouped["Grease"].push(original);
         else if (normalized.includes("rags/wipes")) grouped["Rags/Wipes"].push(original);
         else if (normalized.includes("roots")) grouped["Roots"].push(original);
-else if (normalized.includes("pump/lift station") || normalized.includes("wwtp") || normalized.includes("power outage")) grouped["Lift Station/Treatment Plant/Power"].push(original);		
+        else if (normalized.includes("pump/lift station") || normalized.includes("wwtp") || normalized.includes("power outage")) grouped["Lift Station/Treatment Plant/Power"].push(original);
         else if (normalized.includes("structural failure") || normalized.includes("structural blockage")) grouped["Structural Issues"].push(original);
         else if (normalized.includes("temporary blockage")) grouped["Blockages"].push(original);
         else if (normalized.includes("wet weather")) grouped["Wet Weather"].push(original);
@@ -887,6 +948,7 @@ else if (normalized.includes("pump/lift station") || normalized.includes("wwtp")
 
     document.addEventListener("DOMContentLoaded", () => {
       toggleSidebar();
+      showLoading(); // Show loading overlay at the start
       Promise.all([fetchDroughtData(), fetchSSOData()])
         .then(([droughtFeatures, ssoFeatures]) => {
           rawDroughtData = droughtFeatures;
@@ -989,6 +1051,7 @@ else if (normalized.includes("pump/lift station") || normalized.includes("wwtp")
         })
         .then(() => {
           console.log("Initialization complete");
+          hideLoading(); // Hide loading overlay when everything is ready
           document.getElementById("toggleMapBtn").addEventListener("click", toggleMapVisibility);
           document.getElementById("weeklyBtn").addEventListener("click", () => { currentPeriod = 'weekly'; updateChartWithCurrentPeriod(); updateMap(); });
           document.getElementById("monthlyBtn").addEventListener("click", () => { currentPeriod = 'monthly'; updateChartWithCurrentPeriod(); updateMap(); });
@@ -1003,7 +1066,11 @@ else if (normalized.includes("pump/lift station") || normalized.includes("wwtp")
             updateMap();
           });
         })
-        .catch(error => console.error("Error initializing:", error));
+        .catch(error => {
+          console.error("Error initializing:", error);
+          hideLoading(); // Hide loading even on error to allow user interaction
+          alert("Failed to load data. Please try refreshing the page.");
+        });
     });
 
     window.addEventListener('resize', () => {
