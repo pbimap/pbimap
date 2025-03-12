@@ -912,26 +912,32 @@
       });
     }
 
-    function toggleMapVisibility() {
-      const mapContainer = document.querySelector(".map-container");
-      const chartContainer = document.querySelector(".chart-container");
-      const contentWrapper = document.querySelector(".content-wrapper");
+	function toggleMapVisibility() {
+	  const mapContainer = document.querySelector(".map-container");
+	  const chartContainer = document.querySelector(".chart-container");
+	  const contentWrapper = document.querySelector(".content-wrapper");
 
-      mapVisible = !mapVisible;
-      mapContainer.style.display = mapVisible ? "block" : "none";
-      document.getElementById("toggleMapBtn").textContent = mapVisible ? "Hide Map" : "Show Map";
+	  mapVisible = !mapVisible;
+	  mapContainer.style.display = mapVisible ? "block" : "none";
+	  document.getElementById("toggleMapBtn").textContent = mapVisible ? "Hide Map" : "Show Map";
 
-      if (window.innerWidth <= 768) {
-        chartContainer.style.height = mapVisible ? "50vh" : "calc(100vh - 9rem)"; // Adjusted for mobile header + buttons + footer
-        contentWrapper.style.flexDirection = "column";
-      } else {
-        contentWrapper.style.flexDirection = mapVisible ? "row" : "column";
-        chartContainer.style.height = mapVisible ? "100%" : "calc(100% - 1rem)"; // Leaves space for footer
-      }
+	  if (window.innerWidth <= 768) {
+		chartContainer.style.height = mapVisible ? "50vh" : "calc(100vh - 9rem)"; // Adjusted for mobile header + buttons + footer
+		mapContainer.style.height = mapVisible ? "50vh" : "0"; // Explicitly set map height
+		contentWrapper.style.flexDirection = "column";
+	  } else {
+		contentWrapper.style.flexDirection = mapVisible ? "row" : "column";
+		chartContainer.style.height = mapVisible ? "100%" : "calc(100% - 1rem)"; // Leaves space for footer
+		mapContainer.style.height = mapVisible ? "100%" : "0"; // Explicitly set map height
+	  }
 
-      if (myChart) myChart.resize();
-      // Removed mapView.resize() as it’s not needed; map auto-adjusts
-    }
+	  if (myChart) myChart.resize();
+	  if (mapVisible && mapView) {
+		setTimeout(() => {
+		  mapView.resize(); // Resize map after a short delay
+		}, 100); // 100ms delay to ensure DOM update
+	  }
+	}
 
     function toggleSidebar() {
       const mobileSidebar = document.getElementById("mobile-sidebar");
