@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Add viewport for responsiveness -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>COH - Drought & Sewer Overflow Awareness</title>
   <!-- Chart.js + date adapter + zoom plugin via CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -19,128 +19,141 @@
       box-sizing: border-box;
     }
     body {
-      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      background: linear-gradient(145deg, #0d0d1a, #1a1a33);
       color: #e0e0e0;
       font-family: 'Orbitron', 'Segoe UI', sans-serif;
-      height: 100vh;
-      overflow: hidden;
+      min-height: 100vh;
       display: flex;
-      perspective: 1000px;
+      flex-direction: column;
+      overflow-x: hidden;
+      background-image: radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
     }
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
 
     .container {
       display: flex;
+      flex-direction: column;
       width: 100%;
-      height: 100%;
-      flex-direction: row; /* Default for larger screens */
+      min-height: 100vh;
+      background: rgba(20, 20, 40, 0.8);
+      box-shadow: inset 0 0 20px rgba(0, 212, 255, 0.1);
     }
     .sidebar {
-      width: 250px;
-      padding: 15px;
-      background: rgba(255, 255, 255, 0.05);
-      border-right: 2px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      padding: 0.8rem;
+      background: linear-gradient(180deg, rgba(20, 20, 40, 0.95), rgba(10, 10, 30, 0.95));
+      border-bottom: 1px solid rgba(0, 212, 255, 0.4);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
       backdrop-filter: blur(10px);
-      height: 100%;
-      overflow-y: auto;
-      flex-shrink: 0;
+    }
+    .sidebar summary {
+      cursor: pointer;
+      font-size: 1.1rem;
+      color: #00d4ff;
+      text-shadow: 0 0 8px #00d4ff;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+      margin-bottom: 0.5rem;
+      transition: all 0.2s ease;
+    }
+    .sidebar summary:hover {
+      text-shadow: 0 0 12px #00d4ff;
     }
     .sidebar h3 {
-      font-size: 1.4em;
-      margin-bottom: 20px;
+      font-size: 1rem;
+      margin: 0.5rem 0;
       color: #00d4ff;
-      text-align: left;
-      text-shadow: 0 0 10px #00d4ff, 0 0 20px #00d4ff;
-      border-bottom: 2px solid #00d4ff;
-      padding-bottom: 8px;
+      text-shadow: 0 0 6px #00d4ff;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
     .main-content {
       flex: 1;
-      padding: 15px;
+      padding: 1rem;
       display: flex;
       flex-direction: column;
       align-items: center;
-      transform: translateZ(20px);
-      transition: transform 0.3s ease;
-      overflow-y: hidden;
+      background: linear-gradient(180deg, rgba(20, 20, 40, 0.7), rgba(10, 10, 30, 0.7));
+      min-height: 0;
     }
     .content-wrapper {
-      display: flex;
-      flex-direction: row;
       width: 100%;
-      max-width: 1600px;
-      gap: 15px;
-      height: calc(100% - 90px);
-      margin: 15px 0; /* Ensure margin is applied to create space */
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      flex-grow: 1;
+      min-height: 0;
     }
     .chart-container, .map-container {
-      flex: 1;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 212, 255, 0.2);
-      padding: 15px;
-      transform: rotateX(-5deg) translateZ(4px);
+      width: 100%;
+      background: rgba(10, 10, 30, 0.9);
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2), inset 0 0 10px rgba(0, 212, 255, 0.1);
+      padding: 0.8rem;
       overflow: hidden;
-      height: 100%;
-      max-height: 100%;
+      height: 50vh;
+      border: 1px solid rgba(0, 212, 255, 0.3);
     }
     canvas, #map {
       width: 100% !important;
       height: 100% !important;
-      border-radius: 10px;
-      box-shadow: inset 0 0 15px rgba(0, 212, 255, 0.3);
+      border-radius: 4px;
+      box-shadow: inset 0 0 8px rgba(0, 212, 255, 0.2);
     }
     button {
-      padding: 8px 18px;
-      font-size: 15px;
+      padding: 0.5rem 0.8rem;
+      font-size: 0.85rem;
       cursor: pointer;
-      margin: 4px;
+      margin: 0.2rem;
       background: linear-gradient(45deg, #00d4ff, #007bff);
       color: #fff;
       border: none;
-      border-radius: 8px;
+      border-radius: 4px;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.2);
-      transition: all 0.3s ease;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgba(0, 212, 255, 0.4);
+      transition: all 0.2s ease;
+      min-width: 70px;
+      font-family: 'Orbitron', sans-serif;
     }
     button:hover {
-      transform: translateY(-3px) scale(1.05);
-      box-shadow: 0 8px 20px rgba(0, 212, 255, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.3);
-      background: linear-gradient(45deg, #00d4ff, #0056b3);
+      transform: translateY(-1px) scale(1.03);
+      box-shadow: 0 4px 12px rgba(0, 212, 255, 0.6);
+      background: linear-gradient(45deg, #00eaff, #008cff);
     }
     button.selected {
       background: linear-gradient(45deg, #ff00cc, #ff6699);
-      box-shadow: 0 8px 20px rgba(255, 0, 204, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.3);
-      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(255, 0, 204, 0.6);
+    }
+    button.selected:hover {
+      background: linear-gradient(45deg, #ff33dd, #ff88aa);
     }
     .checkbox-group {
-      margin-bottom: 12px;
+      margin-bottom: 0.5rem;
     }
     .checkbox-group summary {
       cursor: pointer;
       font-weight: 600;
-      font-size: 1em;
-      padding: 8px 12px;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
-      border-radius: 8px 8px 0 0;
+      font-size: 0.85rem;
+      padding: 0.4rem;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 123, 255, 0.05));
+      border-radius: 4px;
       display: flex;
       align-items: center;
-      justify-content: flex-start;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-      transition: all 0.3s ease;
-      text-align: left;
+      transition: all 0.2s ease;
+      color: #00d4ff;
+      text-shadow: 0 0 4px rgba(0, 212, 255, 0.5);
     }
     .checkbox-group summary:hover {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
-      transform: translateZ(5px);
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(0, 123, 255, 0.08));
+      text-shadow: 0 0 8px rgba(0, 212, 255, 0.7);
     }
     .checkbox-group summary::after {
       content: '▼';
-      font-size: 0.9em;
-      margin-left: 8px;
-      transition: transform 0.3s ease;
+      font-size: 0.7rem;
+      margin-left: 0.4rem;
+      transition: transform 0.2s ease;
     }
     .checkbox-group[open] summary::after {
       transform: rotate(180deg);
@@ -148,23 +161,20 @@
     .checkbox-group input[type="checkbox"] {
       -webkit-appearance: none;
       appearance: none;
-      width: 18px;
-      height: 18px;
-      min-width: 18px;
-      min-height: 18px;
-      margin-right: 8px;
-      vertical-align: middle;
+      width: 0.9rem;
+      height: 0.9rem;
+      margin-right: 0.4rem;
       position: relative;
       cursor: pointer;
-      background: linear-gradient(135deg, #1a1a2e, #16213e);
-      border: 2px solid #00d4ff;
-      border-radius: 5px;
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 212, 255, 0.3);
+      background: linear-gradient(135deg, #1a1a33, #0d0d1a);
+      border: 1px solid #00d4ff;
+      border-radius: 2px;
       transition: all 0.2s ease;
+      box-shadow: 0 0 4px rgba(0, 212, 255, 0.3);
     }
     .checkbox-group input[type="checkbox"]:checked {
       background: linear-gradient(135deg, #00d4ff, #007bff);
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 212, 255, 0.5);
+      box-shadow: 0 0 6px rgba(0, 212, 255, 0.6);
     }
     .checkbox-group input[type="checkbox"]:checked::after {
       content: "✔";
@@ -172,162 +182,205 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 12px;
+      font-size: 0.6rem;
       color: #fff;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-    }
-    .checkbox-group input[type="checkbox"]:hover {
-      transform: translateY(-2px) scale(1.1);
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 4px 8px rgba(0, 212, 255, 0.4);
+      text-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
     }
     .checkbox-group label {
       display: flex;
       align-items: center;
-      padding: 6px 12px;
-      background: rgba(255, 255, 255, 0.03);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      transition: all 0.3s ease;
-      text-align: left;
+      padding: 0.3rem 0.4rem;
+      background: rgba(0, 212, 255, 0.05);
+      transition: all 0.2s ease;
+      font-size: 0.8rem;
+      border-radius: 2px;
     }
     .checkbox-group details label {
-      padding-left: 30px;
+      padding-left: 1.2rem;
     }
     .checkbox-group label:hover {
-      background: rgba(255, 255, 255, 0.1);
-      transform: translateZ(3px);
-    }
-    .checkbox-group label:last-child {
-      border-bottom: none;
-      border-radius: 0 0 8px 8px;
+      background: rgba(0, 212, 255, 0.1);
+      color: #fff;
     }
     h1 {
-      font-size: 1.8em;
+      font-size: 1.4rem;
       color: #00d4ff;
-      text-shadow: 0 0 15px #00d4ff, 0 0 30px #00d4ff;
-      margin-bottom: 8px;
+      text-shadow: 0 0 10px #00d4ff, 0 0 20px rgba(0, 212, 255, 0.5);
+      margin-bottom: 0.5rem;
       text-align: center;
+      font-weight: 700;
+      letter-spacing: 1.5px;
     }
     p {
-      font-size: 0.9em;
+      font-size: 0.75rem;
       color: #b0b0b0;
-      margin-bottom: 15px;
+      margin-bottom: 0.8rem;
       text-align: center;
+      text-shadow: 0 0 4px rgba(0, 212, 255, 0.3);
     }
     .switch-container {
-      margin-bottom: 12px;
-      padding: 6px 0;
-      background: transparent;
+      margin-bottom: 0.5rem;
       text-align: center;
+      width: 100%;
     }
     .structure-buttons {
       display: flex;
       justify-content: space-between;
-      gap: 6px;
+      width: 100%;
+      max-width: 100%;
     }
     .structure-btn {
       flex: 1;
-      padding: 6px 10px;
-      font-size: 13px;
-      background: linear-gradient(45deg, #1a1a2e, #16213e);
-      border: 2px solid #00d4ff;
-      border-radius: 8px;
+      padding: 0.1rem;
+      font-size: 0.75rem;
+      background: linear-gradient(45deg, #1a1a33, #0d0d1a);
+      border: 1px solid #00d4ff;
+      border-radius: 4px;
       color: #e0e0e0;
       cursor: pointer;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      transition: all 0.2s ease;
+      box-shadow: 0 0 4px rgba(0, 212, 255, 0.3);
     }
     .structure-btn:hover {
       color: #fff;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 15px rgba(0, 212, 255, 0.6);
+      box-shadow: 0 2px 8px rgba(0, 212, 255, 0.6);
+      background: linear-gradient(45deg, #2a2a4d, #1a1a33);
     }
     .structure-btn.active {
       background: linear-gradient(45deg, #00d4ff, #007bff);
       color: #fff;
-      transform: scale(1.05);
-      box-shadow: 0 6px 15px rgba(0, 212, 255, 0.8);
+      box-shadow: 0 2px 10px rgba(0, 212, 255, 0.7);
     }
-    /* Footer Styles */
     .footer {
       width: 100%;
       text-align: center;
-      padding: 10px;
-      font-size: 10px;
+      padding: 0.5rem;
+      font-size: 0.65rem;
       font-weight: bold;
       color: #00d4ff;
-      text-shadow: 0 0 8px #00d4ff, 0 0 16px #00d4ff;
+      text-shadow: 0 0 6px #00d4ff;
+      border-top: 1px solid rgba(0, 212, 255, 0.3);
+      background: none;
     }
     .footer span {
-      color: red;
-      font-size: 14px;
+      color: #ff3366;
+      font-size: 0.85rem;
+      text-shadow: 0 0 6px #ff3366;
     }
-    /* Media query for mobile responsiveness */
-    @media (max-width: 768px) {
+
+    /* Desktop Styles */
+    @media (min-width: 769px) {
       .container {
-        flex-direction: column; /* Stack sidebar and main content vertically */
+        flex-direction: row;
       }
       .sidebar {
-        width: 100%;
-        height: auto;
-        max-height: 30vh; /* Limit sidebar height on mobile */
-        border-right: none;
-        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        width: 250px;
+        height: 100vh;
+        border-bottom: none;
+        border-right: 1px solid rgba(0, 212, 255, 0.4);
+        position: fixed;
+        top: 0;
+        left: 0;
+        overflow-y: auto;
+        background: linear-gradient(180deg, rgba(20, 20, 40, 0.98), rgba(10, 10, 30, 0.98));
+        box-shadow: 2px 0 15px rgba(0, 0, 0, 0.6);
+      }
+      .sidebar-content {
+        display: block;
+      }
+      .sidebar h3 {
+        font-size: 1.1rem;
+        margin: 0.6rem 0 0.4rem;
       }
       .main-content {
         flex: 1;
-        overflow-y: auto; /* Allow scrolling on mobile if content overflows */
+        margin-left: 250px;
+        overflow-y: hidden;
+        height: 100vh;
+        padding: 0.8rem;
       }
       .content-wrapper {
-        flex-direction: column; /* Stack chart and map vertically */
-        height: auto; /* Allow content to dictate height */
-        min-height: calc(100% - 90px); /* Ensure it fills remaining space */
+        flex-direction: row;
+        height: calc(100% - 5rem); /* Adjusted for header + buttons + footer */
+        margin: 0;
       }
       .chart-container, .map-container {
-        width: 100%;
-        height: 50vh; /* Each takes half the viewport height */
-        max-height: 50vh;
-      }
-      .chart-container {
-        margin-bottom: 15px; /* Add spacing between chart and map */
+        flex: 1;
+        height: 100%;
+        max-height: 100%;
       }
       button {
-        font-size: 12px; /* Smaller buttons on mobile */
-        padding: 6px 12px;
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
       }
       h1 {
-        font-size: 1.5em; /* Smaller header on mobile */
+        font-size: 1.6rem;
       }
       p {
-        font-size: 0.8em; /* Smaller text on mobile */
+        font-size: 0.85rem;
+      }
+      .structure-btn {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+      }
+      .checkbox-group summary {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+      }
+      .checkbox-group input[type="checkbox"] {
+        width: 1rem;
+        height: 1rem;
+      }
+      .checkbox-group label {
+        padding: 0.4rem 0.5rem;
+        font-size: 0.85rem;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="sidebar">
-      <h3>SSO by Struct. Type</h3>
-      <div class="switch-container">
-        <div class="structure-buttons">
-          <button class="structure-btn active" data-type="All" title="Show all SSO Structure types">All</button>
-          <button class="structure-btn" data-type="Main" title="Show SSO from Main Sewer">Main</button>
-          <button class="structure-btn" data-type="Lateral" title="Show SSO from Service Laterals">SLat</button>
+    <!-- Mobile Sidebar with <details> -->
+    <details class="sidebar" id="mobile-sidebar">
+      <summary>Controls</summary>
+      <div class="sidebar-content">
+        <h3>SSO by Struct. Type</h3>
+        <div class="switch-container">
+          <div class="structure-buttons">
+            <button class="structure-btn active" data-type="All" title="Show all SSO Structure types">All</button>
+            <button class="structure-btn" data-type="Main" title="Show SSO from Main Sewer">Main</button>
+            <button class="structure-btn" data-type="Lateral" title="Show SSO from Service Laterals">SLat</button>
+          </div>
         </div>
+        <h3>SSO by Cause</h3>
+        <div id="causeCheckboxes"></div>
       </div>
-      <h3>SSO by Cause</h3>
-      <div id="causeCheckboxes"></div>
+    </details>
+    <!-- Desktop Sidebar without <details> -->
+    <div class="sidebar" id="desktop-sidebar" style="display: none;">
+      <div class="sidebar-content">
+        <h3>SSO by Struct. Type</h3>
+        <div class="switch-container">
+          <div class="structure-buttons">
+            <button class="structure-btn active" data-type="All" title="Show all SSO Structure types">All</button>
+            <button class="structure-btn" data-type="Main" title="Show SSO from Main Sewer">Main</button>
+            <button class="structure-btn" data-type="Lateral" title="Show SSO from Service Laterals">SLat</button>
+          </div>
+        </div>
+        <h3>SSO by Cause</h3>
+        <div id="causeCheckboxesDesktop"></div>
+      </div>
     </div>
     <div class="main-content">
       <h1>COH - Drought & Sewer Overflow Awareness</h1>
-      <p>Click chart to update map date; Zoom/pan chart or map, then click <em>Reset Zoom</em></p>
+      <p>Tap chart to update map date; Zoom/pan chart or map, then tap <em>Reset Zoom</em></p>
       <div>
         <button id="weeklyBtn">Weekly</button>
         <button id="monthlyBtn" class="selected">Monthly</button>
         <button id="yearlyBtn">Yearly</button>
         <button id="resetZoomBtn">Reset Zoom</button>
-        <button id="toggleMapBtn">Show Map</button>
+        <button id="toggleMapBtn">Hide Map</button>
       </div>
       <div class="content-wrapper">
         <div class="chart-container">
@@ -337,9 +390,9 @@
           <div id="map"></div>
         </div>
       </div>
-	    <div class="footer">
-    Made with <span>&#10084;</span> by WWO - HNg - 2025 - Disclaimer: Data provided 'as is' for informational use only.
-  </div>
+      <div class="footer">
+        Made with <span>❤</span> by WWO - HNg - 2025 - Disclaimer: Data provided 'as is' for informational use only.
+      </div>
     </div>
   </div>
 
@@ -439,10 +492,10 @@
         if (normalized.includes("grease blockage")) grouped["Grease"].push(original);
         else if (normalized.includes("rags/wipes")) grouped["Rags/Wipes"].push(original);
         else if (normalized.includes("roots")) grouped["Roots"].push(original);
+else if (normalized.includes("pump/lift station") || normalized.includes("wwtp") || normalized.includes("power outage")) grouped["Lift Station/Treatment Plant/Power"].push(original);		
         else if (normalized.includes("structural failure") || normalized.includes("structural blockage")) grouped["Structural Issues"].push(original);
         else if (normalized.includes("temporary blockage")) grouped["Blockages"].push(original);
         else if (normalized.includes("wet weather")) grouped["Wet Weather"].push(original);
-        else if (normalized.includes("pump/lift station") || normalized.includes("wwtp") || normalized.includes("power outage")) grouped["Lift Station/Treatment Plant/Power"].push(original);
         else if (normalized.includes("cross connection") || normalized.includes("cross-connection")) grouped["Cross Connections"].push(original);
         else if (normalized === "unknown") grouped["Unknown"].push(original);
         else grouped["Other"].push(original);
@@ -452,10 +505,15 @@
       return grouped;
     }
 
-    function createStructureTypeSwitch() {
-      document.querySelectorAll('.structure-btn').forEach(button => {
+    function createStructureTypeSwitch(containerSelector) {
+      const buttons = document.querySelectorAll(`${containerSelector} .structure-btn`);
+      if (buttons.length === 0) {
+        console.error(`No structure buttons found in ${containerSelector}`);
+        return;
+      }
+      buttons.forEach(button => {
         button.addEventListener('click', () => {
-          document.querySelectorAll('.structure-btn').forEach(btn => btn.classList.remove('active'));
+          buttons.forEach(btn => btn.classList.remove('active'));
           button.classList.add('active');
           selectedStructureGroup = button.getAttribute('data-type') === "All" ? "All" :
                                    button.getAttribute('data-type') === "Main" ? "Main" : "Service Lateral";
@@ -463,16 +521,27 @@
           updateMap();
         });
       });
+      console.log(`Structure type switch initialized for ${containerSelector}`);
     }
 
-    function createCauseCheckboxes() {
+    function createCauseCheckboxes(containerId) {
+      if (!rawSSOFeatures || rawSSOFeatures.length === 0) {
+        console.error("No SSO features available to create checkboxes");
+        document.getElementById(containerId).innerHTML = "<p>No data available</p>";
+        return;
+      }
       uniqueCauses = [...new Set(rawSSOFeatures.map(f => f.attributes.CAUSE))];
       const groupedCauses = groupCauses(uniqueCauses);
-      const container = document.getElementById("causeCheckboxes");
+      const container = document.getElementById(containerId);
+      if (!container) {
+        console.error(`Container ${containerId} not found`);
+        return;
+      }
+      container.innerHTML = ""; // Clear existing content
 
       const allCheckbox = document.createElement("div");
       allCheckbox.className = "checkbox-group";
-      allCheckbox.innerHTML = `<label><input type="checkbox" id="cause-all" checked> All</label>`;
+      allCheckbox.innerHTML = `<label><input type="checkbox" id="cause-all-${containerId}" checked> All</label>`;
       container.appendChild(allCheckbox);
 
       const categoryOrder = ["Grease", "Rags/Wipes", "Roots", "Structural Issues", "Blockages",
@@ -518,7 +587,7 @@
         container.appendChild(details);
       });
 
-      document.getElementById("cause-all").addEventListener("change", (e) => {
+      document.getElementById(`cause-all-${containerId}`).addEventListener("change", (e) => {
         const isChecked = e.target.checked;
         container.querySelectorAll(".cause-checkbox, .category-checkbox").forEach(cb => {
           cb.checked = isChecked;
@@ -532,11 +601,15 @@
       });
 
       function updateAllCheckbox() {
-        document.getElementById("cause-all").checked = categoryOrder.every(cat => {
-          const catCheckbox = container.querySelector(`[data-category="${cat}"]`);
-          return !catCheckbox || catCheckbox.checked;
-        });
+        const allCheckbox = document.getElementById(`cause-all-${containerId}`);
+        if (allCheckbox) {
+          allCheckbox.checked = categoryOrder.every(cat => {
+            const catCheckbox = container.querySelector(`[data-category="${cat}"]`);
+            return !catCheckbox || catCheckbox.checked;
+          });
+        }
       }
+      console.log(`Cause checkboxes created for ${containerId} with ${uniqueCauses.length} unique causes`);
     }
 
     function aggregateData(data, period) {
@@ -654,82 +727,92 @@
     }
 
     function initializeMap() {
-      require([
-        "esri/Map",
-        "esri/views/MapView",
-        "esri/layers/FeatureLayer",
-        "esri/widgets/Legend",
-        "esri/widgets/Expand"
-      ], (Map, MapView, FeatureLayer, Legend, Expand) => {
-        const ssoLayer = new FeatureLayer({
-          url: "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/RSSO_Package/FeatureServer/0",
-          outFields: ["*"],
-          definitionExpression: "System LIKE '%ublic%' AND STARTDATE >= '2019-01-01'",
-          renderer: {
-            type: "unique-value",
-            valueExpression: `
-              var structureType = $feature.STRUCTURETYPE;
-              if (IsEmpty(structureType)) return 'Service Lateral';
-              if (Includes(['Manhole', 'Lift Station', 'Gravity Main', 'Force Main', 'Treatment Plant'], structureType)) return 'Main';
-              return 'Service Lateral';
-            `,
-            uniqueValueInfos: [
-              {
-                value: "Main",
-                symbol: {
-                  type: "simple-marker",
-                  color: structureGroups["Main"].color,
-                  size: 8,
-                  outline: { color: structureGroups["Main"].outline, width: 1.5 }
-                }
-              },
-              {
-                value: "Service Lateral",
-                symbol: {
-                  type: "simple-marker",
-                  color: structureGroups["Service Lateral"].color,
-                  size: 8,
-                  outline: { color: structureGroups["Service Lateral"].outline, width: 1.5 }
+      return new Promise((resolve, reject) => {
+        require([
+          "esri/Map",
+          "esri/views/MapView",
+          "esri/layers/FeatureLayer",
+          "esri/widgets/Legend",
+          "esri/widgets/Expand"
+        ], (Map, MapView, FeatureLayer, Legend, Expand) => {
+          try {
+            const ssoLayer = new FeatureLayer({
+              url: "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/RSSO_Package/FeatureServer/0",
+              outFields: ["*"],
+              definitionExpression: "System LIKE '%ublic%' AND STARTDATE >= '2019-01-01'",
+              renderer: {
+                type: "unique-value",
+                valueExpression: `
+                  var structureType = $feature.STRUCTURETYPE;
+                  if (IsEmpty(structureType)) return 'Service Lateral';
+                  if (Includes(['Manhole', 'Lift Station', 'Gravity Main', 'Force Main', 'Treatment Plant'], structureType)) return 'Main';
+                  return 'Service Lateral';
+                `,
+                uniqueValueInfos: [
+                  {
+                    value: "Main",
+                    symbol: {
+                      type: "simple-marker",
+                      color: structureGroups["Main"].color,
+                      size: 8,
+                      outline: { color: structureGroups["Main"].outline, width: 1.5 }
+                    }
+                  },
+                  {
+                    value: "Service Lateral",
+                    symbol: {
+                      type: "simple-marker",
+                      color: structureGroups["Service Lateral"].color,
+                      size: 8,
+                      outline: { color: structureGroups["Service Lateral"].outline, width: 1.5 }
+                    }
+                  }
+                ],
+                defaultSymbol: { 
+                  type: "simple-marker", 
+                  color: structureGroups["All"].color, 
+                  size: 8, 
+                  outline: { color: structureGroups["All"].outline, width: 1.5 }
                 }
               }
-            ],
-            defaultSymbol: { 
-              type: "simple-marker", 
-              color: structureGroups["All"].color, 
-              size: 8, 
-              outline: { color: structureGroups["All"].outline, width: 1.5 }
-            }
+            });
+
+            const map = new Map({
+              basemap: "streets-night-vector",
+              layers: [ssoLayer]
+            });
+
+            mapView = new MapView({
+              container: "map",
+              map: map,
+              center: [-95.3632715, 29.7632836],
+              zoom: 10
+            });
+
+            const legend = new Legend({
+              view: mapView,
+              layerInfos: [{ layer: ssoLayer, title: "SSO Events by Structure Type" }]
+            });
+
+            const legendExpand = new Expand({
+              view: mapView,
+              content: legend,
+              expanded: false,
+              expandTooltip: "Show Legend",
+              collapseTooltip: "Hide Legend"
+            });
+
+            mapView.ui.add(legendExpand, "top-right");
+
+            mapView.when(() => {
+              console.log("Map initialized successfully");
+              updateMap();
+              resolve();
+            }).catch(err => reject(err));
+          } catch (error) {
+            reject(error);
           }
-        });
-
-        const map = new Map({
-          basemap: "streets-night-vector",
-          layers: [ssoLayer]
-        });
-
-        mapView = new MapView({
-          container: "map",
-          map: map,
-          center: [-95.3632715, 29.7632836],
-          zoom: 10
-        });
-
-        const legend = new Legend({
-          view: mapView,
-          layerInfos: [{ layer: ssoLayer, title: "SSO Events by Structure Type" }]
-        });
-
-        const legendExpand = new Expand({
-          view: mapView,
-          content: legend,
-          expanded: false,
-          expandTooltip: "Show Legend",
-          collapseTooltip: "Hide Legend"
-        });
-
-        mapView.ui.add(legendExpand, "top-right");
-
-        mapView.when(() => updateMap());
+        }, err => reject(err));
       });
     }
 
@@ -737,6 +820,7 @@
       if (!mapView) return;
       require(["esri/layers/FeatureLayer"], (FeatureLayer) => {
         const ssoLayer = mapView.map.layers.find(layer => layer.url.includes("RSSO_Package"));
+        if (!ssoLayer) return;
         let ssoWhereClause = "System LIKE '%ublic%' AND STARTDATE >= '2019-01-01'";
         
         if (selectedDate) {
@@ -770,188 +854,175 @@
 
     function toggleMapVisibility() {
       const mapContainer = document.querySelector(".map-container");
-      const contentWrapper = document.querySelector(".content-wrapper");
       const chartContainer = document.querySelector(".chart-container");
+      const contentWrapper = document.querySelector(".content-wrapper");
 
-      mapVisible = !mapVisible; // Toggle the visibility state
+      mapVisible = !mapVisible;
       mapContainer.style.display = mapVisible ? "block" : "none";
       document.getElementById("toggleMapBtn").textContent = mapVisible ? "Hide Map" : "Show Map";
 
-      // Ensure content-wrapper's margin is respected by setting explicit heights
-      if (window.innerWidth > 768) {
-        // Desktop view
-        if (!mapVisible) {
-          // When map is hidden, chart takes full space but respects margins
-          contentWrapper.style.flexDirection = "row"; // Keep row layout
-          chartContainer.style.width = "100%";
-          chartContainer.style.height = "calc(100% - 4px)"; // Account for content-wrapper's 15px top/bottom margin
-          chartContainer.style.maxHeight = "calc(100% - 4px)";
-          mapContainer.style.width = "0";
-          mapContainer.style.height = "0";
-          mapContainer.style.maxHeight = "0";
-        } else {
-          // When map is shown, revert to row layout
-          contentWrapper.style.flexDirection = "row";
-          chartContainer.style.width = "auto";
-          chartContainer.style.height = "100%";
-          chartContainer.style.maxHeight = "100%";
-          mapContainer.style.width = "auto";
-          mapContainer.style.height = "100%";
-          mapContainer.style.maxHeight = "100%";
-        }
-      } else {
-        // Mobile view
+      if (window.innerWidth <= 768) {
+        chartContainer.style.height = mapVisible ? "50vh" : "calc(100vh - 9rem)"; // Adjusted for mobile header + buttons + footer
         contentWrapper.style.flexDirection = "column";
-        chartContainer.style.width = "100%";
-        chartContainer.style.height = mapVisible ? "50vh" : "calc(100% - 4px)"; // Account for content-wrapper's margin
-        chartContainer.style.maxHeight = mapVisible ? "50vh" : "calc(100% - 4px)";
-        mapContainer.style.width = "100%";
-        mapContainer.style.height = mapVisible ? "50vh" : "0";
-        mapContainer.style.maxHeight = mapVisible ? "50vh" : "0";
+      } else {
+        contentWrapper.style.flexDirection = mapVisible ? "row" : "column";
+        chartContainer.style.height = mapVisible ? "100%" : "calc(100% - 1rem)"; // Leaves space for footer
       }
 
-      // Force chart to resize
-      if (myChart) {
-        myChart.resize();
+      if (myChart) myChart.resize();
+      // Removed mapView.resize() as it’s not needed; map auto-adjusts
+    }
+
+    function toggleSidebar() {
+      const mobileSidebar = document.getElementById("mobile-sidebar");
+      const desktopSidebar = document.getElementById("desktop-sidebar");
+      if (window.innerWidth <= 768) {
+        mobileSidebar.style.display = "block";
+        desktopSidebar.style.display = "none";
+      } else {
+        mobileSidebar.style.display = "none";
+        desktopSidebar.style.display = "block";
       }
     }
 
-    Promise.all([fetchDroughtData(), fetchSSOData()])
-      .then(([droughtFeatures, ssoFeatures]) => {
-        rawDroughtData = droughtFeatures;
-        rawSSOFeatures = ssoFeatures;
+    document.addEventListener("DOMContentLoaded", () => {
+      toggleSidebar();
+      Promise.all([fetchDroughtData(), fetchSSOData()])
+        .then(([droughtFeatures, ssoFeatures]) => {
+          rawDroughtData = droughtFeatures;
+          rawSSOFeatures = ssoFeatures;
+          console.log("Data fetched: Drought features:", rawDroughtData.length, "SSO features:", rawSSOFeatures.length);
 
-        createStructureTypeSwitch();
-        createCauseCheckboxes();
+          createStructureTypeSwitch("#mobile-sidebar");
+          createStructureTypeSwitch("#desktop-sidebar");
+          createCauseCheckboxes("causeCheckboxes");
+          createCauseCheckboxes("causeCheckboxesDesktop");
 
-        const aggDrought = aggregateData(rawDroughtData, 'monthly');
-        const aggSSO = aggregateSSOData(rawSSOFeatures, 'monthly');
+          const aggDrought = aggregateData(rawDroughtData, 'monthly');
+          const aggSSO = aggregateSSOData(rawSSOFeatures, 'monthly');
 
-        const ctx = document.getElementById("droughtChart").getContext("2d");
-        myChart = new Chart(ctx, {
-          type: "line",
-          data: {
-            datasets: [
-              { label: "Exceptional", data: aggDrought.map(r => ({ x: r.date, y: r.d4 })), borderColor: "#4F0012", backgroundColor: "#4F0012", fill: "origin", tension: 0.1, pointRadius: 0, order: 1 },
-              { label: "Extreme", data: aggDrought.map(r => ({ x: r.date, y: r.d3 })), borderColor: "#9C0924", backgroundColor: "#9C0924", fill: "-1", tension: 0.1, pointRadius: 0, order: 1 },
-              { label: "Severe", data: aggDrought.map(r => ({ x: r.date, y: r.d2 })), borderColor: "#EC692D", backgroundColor: "#EC692D", fill: "-1", tension: 0.1, pointRadius: 0, order: 1 },
-              { label: "Moderate", data: aggDrought.map(r => ({ x: r.date, y: r.d1 })), borderColor: "#F09D33", backgroundColor: "#F09D33", fill: "-1", tension: 0.1, pointRadius: 0, order: 1 },
-              { label: "Abn. Dry", data: aggDrought.map(r => ({ x: r.date, y: r.d0 })), borderColor: "#FDEFA4", backgroundColor: "#FDEFA4", fill: "-1", tension: 0.1, pointRadius: 0, order: 1 },
-              { label: "SSO Count", data: aggSSO.map(r => ({ x: r.date, y: r.count })), borderColor: "#00FF00", backgroundColor: "#00FF00", fill: false, tension: 0, pointRadius: 3, yAxisID: "y2", order: 0 },
-              {
-                label: "Special Weather Events",
-                data: specialWeatherEvents.map(event => ({ x: event.date, y: 100, event: event.event, date: event.date.toISOString().split('T')[0] })),
-                type: "scatter",
-                yAxisID: "y",
-                pointRadius: 0,
-                pointHoverRadius: 50,
-                showLine: false,
-                order: -1,
-                tooltip: { callbacks: { label: ctx => `${ctx.raw.date} | ${ctx.raw.event}` } }
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: { mode: "index", intersect: false },
-            scales: {
-              x: { type: "time", time: { unit: "month", tooltipFormat: "yyyy-MM-dd" }, ticks: { color: "#dddddd" }, grid: { color: "#444" } },
-              y: { stacked: true, min: 0, suggestedMax: 110, ticks: { color: "#dddddd" }, grid: { color: "#444" } },
-              y2: { type: "linear", position: "right", ticks: { color: "#dddddd" }, grid: { drawOnChartArea: false } }
+          const ctx = document.getElementById("droughtChart").getContext("2d");
+          myChart = new Chart(ctx, {
+            type: "line",
+            data: {
+              datasets: [
+                { label: "Exceptional", data: aggDrought.map(r => ({ x: r.date, y: r.d4 })), borderColor: "#4F0012", backgroundColor: "rgba(79, 0, 18, 0.7)", fill: "origin", tension: 0.1, pointRadius: 0, order: 1 },
+                { label: "Extreme", data: aggDrought.map(r => ({ x: r.date, y: r.d3 })), borderColor: "#9C0924", backgroundColor: "rgba(156, 9, 36, 0.7)", fill: "-1", tension: 0.1, pointRadius: 0, order: 1 },
+                { label: "Severe", data: aggDrought.map(r => ({ x: r.date, y: r.d2 })), borderColor: "#EC692D", backgroundColor: "rgba(236, 105, 45, 0.7)", fill: "-1", tension: 0.1, pointRadius: 0, order: 1 },
+                { label: "Moderate", data: aggDrought.map(r => ({ x: r.date, y: r.d1 })), borderColor: "#F09D33", backgroundColor: "rgba(240, 157, 51, 0.7)", fill: "-1", tension: 0.1, pointRadius: 0, order: 1 },
+                { label: "Abn. Dry", data: aggDrought.map(r => ({ x: r.date, y: r.d0 })), borderColor: "#FDEFA4", backgroundColor: "rgba(253, 239, 164, 0.7)", fill: "-1", tension: 0.1, pointRadius: 0, order: 1 },
+                { label: "SSO Count", data: aggSSO.map(r => ({ x: r.date, y: r.count })), borderColor: "#00FF00", backgroundColor: "rgba(0, 255, 0, 0.7)", fill: false, tension: 0, pointRadius: 3, yAxisID: "y2", order: 0 },
+                {
+                  label: "Special Weather Events",
+                  data: specialWeatherEvents.map(event => ({ x: event.date, y: 100, event: event.event, date: event.date.toISOString().split('T')[0] })),
+                  type: "scatter",
+                  yAxisID: "y",
+                  pointRadius: 0,
+                  pointHoverRadius: 50,
+                  showLine: false,
+                  order: -1,
+                  tooltip: { callbacks: { label: ctx => `${ctx.raw.date} | ${ctx.raw.event}` } }
+                }
+              ]
             },
-            plugins: {
-              legend: { labels: { color: "#dddddd" }, position: "top" },
-              title: { display: true, text: "Drought & SSO (Monthly)" },
-              zoom: { zoom: { wheel: { enabled: true }, drag: { enabled: true }, mode: "x" }, pan: { enabled: true, mode: "x" } },
-              annotation: {
-                annotations: [
-                  ...specialWeatherEvents.map((e, i) => ({
-                    type: 'label', xValue: e.date, yValue: 100, content: e.emoji, color: '#ffffff', font: { size: 20 }, position: 'center', xAdjust: 0, yAdjust: -5, backgroundColor: 'rgba(0, 0, 0, 0)', borderWidth: 0
-                  })),
-                  {
-                    type: 'line',
-                    id: 'cursorLine',
-                    mode: 'vertical',
-                    scaleID: 'x',
-                    value: aggSSO[aggSSO.length - 1].date,
-                    borderColor: '#00d4ff',
-                    borderWidth: 2,
-                    label: {
-                      enabled: true,
-                      content: 'Latest',
-                      position: 'top',
-                      backgroundColor: 'rgba(0, 212, 255, 0.8)',
-                      font: { size: 12 }
-                    }
-                  }
-                ]
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              interaction: { mode: "index", intersect: false },
+              scales: {
+                x: { type: "time", time: { unit: "month", tooltipFormat: "yyyy-MM-dd" }, ticks: { color: "#00d4ff" }, grid: { color: "rgba(0, 212, 255, 0.2)" } },
+                y: { stacked: true, min: 0, suggestedMax: 110, ticks: { color: "#00d4ff" }, grid: { color: "rgba(0, 212, 255, 0.2)" } },
+                y2: { type: "linear", position: "right", ticks: { color: "#00ff00" }, grid: { drawOnChartArea: false } }
               },
-              tooltip: {
-                mode: "index",
-                intersect: false,
-                callbacks: { label: ctx => ctx.dataset.label === "Special Weather Events" ? `${ctx.raw.date} | ${ctx.raw.event}` : `${ctx.dataset.label}: ${ctx.raw.y}` }
-              }
-            },
-            onClick: (event, elements, chart) => {
-              const xValue = chart.scales.x.getValueForPixel(event.x);
-              if (xValue) {
-                selectedDate = new Date(xValue);
-                const aggSSO = aggregateSSOData(rawSSOFeatures, currentPeriod);
-                selectedDate = aggSSO.reduce((prev, curr) => 
-                  Math.abs(curr.date - selectedDate) < Math.abs(prev.date - selectedDate) ? curr : prev
-                ).date;
-                updateChartWithCurrentPeriod();
-                updateMap();
+              plugins: {
+                legend: { labels: { color: "#00d4ff", font: { family: 'Orbitron' } }, position: "top" },
+                title: { display: true, text: "Drought & SSO (Monthly)", color: "#00d4ff", font: { size: 16, family: 'Orbitron' } },
+                zoom: { zoom: { wheel: { enabled: true }, drag: { enabled: true }, mode: "x" }, pan: { enabled: true, mode: "x" } },
+                annotation: {
+                  annotations: [
+                    ...specialWeatherEvents.map((e, i) => ({
+                      type: 'label', xValue: e.date, yValue: 100, content: e.emoji, color: '#ffffff', font: { size: 20 }, position: 'center', xAdjust: 0, yAdjust: -5, backgroundColor: 'rgba(0, 0, 0, 0)', borderWidth: 0
+                    })),
+                    {
+                      type: 'line',
+                      id: 'cursorLine',
+                      mode: 'vertical',
+                      scaleID: 'x',
+                      value: aggSSO[aggSSO.length - 1].date,
+                      borderColor: '#00d4ff',
+                      borderWidth: 2,
+                      label: {
+                        enabled: true,
+                        content: 'Latest',
+                        position: 'top',
+                        backgroundColor: 'rgba(0, 212, 255, 0.8)',
+                        font: { size: 12, family: 'Orbitron' }
+                      }
+                    }
+                  ]
+                },
+                tooltip: {
+                  mode: "index",
+                  intersect: false,
+                  backgroundColor: 'rgba(10, 10, 30, 0.9)',
+                  titleFont: { family: 'Orbitron' },
+                  bodyFont: { family: 'Orbitron' },
+                  callbacks: { label: ctx => ctx.dataset.label === "Special Weather Events" ? `${ctx.raw.date} | ${ctx.raw.event}` : `${ctx.dataset.label}: ${ctx.raw.y}` }
+                }
+              },
+              onClick: (event, elements, chart) => {
+                const xValue = chart.scales.x.getValueForPixel(event.x);
+                if (xValue) {
+                  selectedDate = new Date(xValue);
+                  const aggSSO = aggregateSSOData(rawSSOFeatures, currentPeriod);
+                  selectedDate = aggSSO.reduce((prev, curr) => 
+                    Math.abs(curr.date - selectedDate) < Math.abs(prev.date - selectedDate) ? curr : prev
+                  ).date;
+                  updateChartWithCurrentPeriod();
+                  updateMap();
+                }
               }
             }
-          }
-        });
+          });
 
-        initializeMap();
-        document.getElementById("toggleMapBtn").addEventListener("click", toggleMapVisibility);
-      })
-      .catch(error => console.error("Error initializing:", error));
-
-    document.getElementById("weeklyBtn").addEventListener("click", () => { currentPeriod = 'weekly'; updateChartWithCurrentPeriod(); updateMap(); });
-    document.getElementById("monthlyBtn").addEventListener("click", () => { currentPeriod = 'monthly'; updateChartWithCurrentPeriod(); updateMap(); });
-    document.getElementById("yearlyBtn").addEventListener("click", () => { currentPeriod = 'yearly'; updateChartWithCurrentPeriod(); updateMap(); });
-    document.getElementById("resetZoomBtn").addEventListener("click", () => {
-      if (myChart) {
-        myChart.resetZoom();
-        selectedDate = null;
-        updateChartWithCurrentPeriod();
-      }
-      if (mapView) mapView.goTo({ center: [-95.3632715, 29.7632836], zoom: 10 });
-      updateMap();
+          return initializeMap();
+        })
+        .then(() => {
+          console.log("Initialization complete");
+          document.getElementById("toggleMapBtn").addEventListener("click", toggleMapVisibility);
+          document.getElementById("weeklyBtn").addEventListener("click", () => { currentPeriod = 'weekly'; updateChartWithCurrentPeriod(); updateMap(); });
+          document.getElementById("monthlyBtn").addEventListener("click", () => { currentPeriod = 'monthly'; updateChartWithCurrentPeriod(); updateMap(); });
+          document.getElementById("yearlyBtn").addEventListener("click", () => { currentPeriod = 'yearly'; updateChartWithCurrentPeriod(); updateMap(); });
+          document.getElementById("resetZoomBtn").addEventListener("click", () => {
+            if (myChart) {
+              myChart.resetZoom();
+              selectedDate = null;
+              updateChartWithCurrentPeriod();
+            }
+            if (mapView) mapView.goTo({ center: [-95.3632715, 29.7632836], zoom: 10 });
+            updateMap();
+          });
+        })
+        .catch(error => console.error("Error initializing:", error));
     });
 
-    // Ensure chart resizes on window resize and adjust layout
     window.addEventListener('resize', () => {
-      if (myChart) {
-        myChart.resize();
-      }
-      const contentWrapper = document.querySelector(".content-wrapper");
+      toggleSidebar();
       const chartContainer = document.querySelector(".chart-container");
       const mapContainer = document.querySelector(".map-container");
+      const contentWrapper = document.querySelector(".content-wrapper");
 
       if (window.innerWidth <= 768) {
+        chartContainer.style.height = mapVisible ? "50vh" : "calc(100vh - 9rem)";
         contentWrapper.style.flexDirection = "column";
-        chartContainer.style.width = "100%";
-        chartContainer.style.height = mapVisible ? "50vh" : "calc(100% - 4px)"; // Account for content-wrapper's 15px top/bottom margin
-        chartContainer.style.maxHeight = mapVisible ? "50vh" : "calc(100% - 4px)";
-        mapContainer.style.width = "100%";
         mapContainer.style.height = mapVisible ? "50vh" : "0";
-        mapContainer.style.maxHeight = mapVisible ? "50vh" : "0";
       } else {
-        contentWrapper.style.flexDirection = "row";
-        chartContainer.style.width = mapVisible ? "auto" : "100%";
-        chartContainer.style.height = "calc(100% - 4px)"; 
-        chartContainer.style.maxHeight = "calc(100% - 4px)"
-        mapContainer.style.width = mapVisible ? "auto" : "0";
+        contentWrapper.style.flexDirection = mapVisible ? "row" : "column";
+        chartContainer.style.height = mapVisible ? "100%" : "calc(100% - 1rem)";
         mapContainer.style.height = mapVisible ? "100%" : "0";
-        mapContainer.style.maxHeight = mapVisible ? "100%" : "0";
       }
+      if (myChart) myChart.resize();
+      // Removed mapView.resize()
     });
   </script>
 </body>
