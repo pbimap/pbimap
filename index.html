@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>COH - Drought & Sewer Overflow Awareness</title>
+  <title>COH - Drought & Public Sewer Overflow</title>
   <!-- Chart.js + date adapter + zoom plugin via CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
@@ -556,6 +556,10 @@
         </div>
         <h3>SSO by Cause</h3>
         <div id="causeCheckboxes"></div>
+		      <div class="footer">
+  <hr style="border: none; height: 1px; background: linear-gradient(to right, #002855, #0056b3); width: 100%;" />
+  Drought Data source: U.S. Drought Monitor
+      </div>
       </div>
     </details>
     <!-- Desktop Sidebar without <details> -->
@@ -571,10 +575,14 @@
         </div>
         <h3>SSO by Cause</h3>
         <div id="causeCheckboxesDesktop"></div>
+		      <div class="footer">
+  <hr style="border: none; height: 1px; background: linear-gradient(to right, #002855, #0056b3); width: 100%;" />
+  Drought Data source: U.S. Drought Monitor
+      </div>		
       </div>
     </div>
     <div class="main-content">
-      <h1>COH - Drought & Sewer Overflow Awareness</h1>
+      <h1>COH - Drought & Public Sewer Overflow Awareness</h1>
       <p>Tap chart to update map date; Zoom/pan chart or map, then tap <em>Reset Zoom -</em><button id="downloadBtn" class="download-btn" title="Download SSO and Drought Data as CSV">📥</button></p>
       <div>
         <button id="weeklyBtn">Weekly</button>
@@ -903,7 +911,7 @@
       myChart.data.datasets[3].data = aggDrought.map(r => ({ x: r.date, y: r.d1 }));
       myChart.data.datasets[4].data = aggDrought.map(r => ({ x: r.date, y: r.d0 }));
       myChart.data.datasets[5].data = aggSSO.map(r => ({ x: r.date, y: r.count }));
-      myChart.options.plugins.title.text = `Drought & SSO (${currentPeriod.charAt(0).toUpperCase() + currentPeriod.slice(1)})`;
+      myChart.options.plugins.title.text = `Drought & Public Sewer Overflow (${currentPeriod.charAt(0).toUpperCase() + currentPeriod.slice(1)})`;
       myChart.options.plugins.annotation.annotations = [
         ...specialWeatherEvents.map((e, i) => ({
           type: 'label', xValue: e.date, yValue: 100, content: e.emoji, color: '#ffffff', font: { size: 20 }, position: 'center', xAdjust: 0, yAdjust: -5, backgroundColor: 'rgba(0, 0, 0, 0)', borderWidth: 0
@@ -1220,7 +1228,7 @@
               },
               plugins: {
                 legend: { labels: { color: "#00d4ff", font: { family: 'Orbitron' } }, position: "top" },
-                title: { display: true, text: "Drought & SSO (Monthly)", color: "#00d4ff", font: { size: 16, family: 'Orbitron' } },
+                title: { display: true, text: "Drought & Public Sewer Overflow (Monthly)", color: "#00d4ff", font: { size: 16, family: 'Orbitron' } },
                 zoom: { zoom: { wheel: { enabled: true }, drag: { enabled: true }, mode: "x" }, pan: { enabled: true, mode: "x" } },
                 annotation: {
                   annotations: [
