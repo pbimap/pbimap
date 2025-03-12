@@ -129,6 +129,26 @@
     button.selected:hover {
       background: linear-gradient(45deg, #ff33dd, #ff88aa);
     }
+	.download-btn {
+	  padding: 0;
+	  font-size: 16px;
+	  background: linear-gradient(45deg, #00d4ff, #007bff);
+	  border: 1px solid rgba(0, 212, 255, 0.6);
+	  border-radius: 6px;
+	  display: inline-flex;
+	  align-items: center;
+	  justify-content: center;
+	  box-shadow: 0 2px 6px rgba(0, 212, 255, 0.4);
+	  transition: all 0.2s ease;
+	  vertical-align: middle;
+	  margin-left: 0.5rem;
+	}
+	.download-btn:hover {
+	  transform: translateY(-1px);
+	  box-shadow: 0 4px 10px rgba(0, 212, 255, 0.6);
+	  background: linear-gradient(45deg, #00eaff, #008cff);
+	  border-color: rgba(0, 212, 255, 0.8);
+	}
     .checkbox-group {
       margin-bottom: 0.5rem;
     }
@@ -313,6 +333,108 @@
       50% { opacity: 0.5; }
     }
 
+    /* Dialog Box Styles */
+    .dialog-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 10, 30, 0.9);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      backdrop-filter: blur(5px);
+    }
+    .dialog-box {
+      background: linear-gradient(135deg, rgba(20, 20, 40, 0.95), rgba(10, 10, 30, 0.95));
+      border-radius: 12px;
+      padding: 0 1.5rem 1.5rem;
+      width: 90%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 20px rgba(0, 212, 255, 0.3), inset 0 0 15px rgba(0, 212, 255, 0.1);
+      border: 1px solid rgba(0, 212, 255, 0.4);
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .dialog-header {
+      position: sticky;
+      top: 0;
+      background: linear-gradient(135deg, rgba(20, 20, 40, 0.98), rgba(10, 10, 30, 0.98));
+      padding: 1rem 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1;
+      border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+    }
+    .dialog-box h2 {
+      font-size: 1.5rem;
+      color: #00d4ff;
+      text-shadow: 0 0 10px #00d4ff;
+      margin: 0;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .event-list {
+      list-style: none;
+    }
+    .event-item {
+      background: rgba(0, 212, 255, 0.05);
+      padding: 0.8rem;
+      margin-bottom: 0.5rem;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      border: 1px solid rgba(0, 212, 255, 0.2);
+    }
+    .event-item:hover {
+      background: rgba(0, 212, 255, 0.1);
+      box-shadow: 0 2px 8px rgba(0, 212, 255, 0.4);
+      transform: translateY(-2px);
+    }
+    .event-item span {
+      display: block;
+      font-size: 0.9rem;
+      color: #e0e0e0;
+    }
+    .event-item .emoji {
+      font-size: 1.2rem;
+      margin-right: 0.5rem;
+      vertical-align: middle;
+    }
+    .event-item .date {
+      color: #00d4ff;
+      font-weight: 600;
+      text-shadow: 0 0 4px rgba(0, 212, 255, 0.5);
+    }
+    .event-item .description {
+      font-size: 0.85rem;
+      color: #b0b0b0;
+    }
+    .dialog-close-btn {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      color: #ff3366;
+      text-shadow: 0 0 6px #ff3366;
+      padding: 0;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .dialog-close-btn:hover {
+      color: #ff5588;
+      text-shadow: 0 0 10px #ff5588;
+      transform: scale(1.1);
+    }
+
     /* Desktop Styles */
     @media (min-width: 769px) {
       .container {
@@ -358,6 +480,10 @@
         padding: 0.6rem 1rem;
         font-size: 0.9rem;
       }
+	  .download-btn {
+		padding: 0;
+		font-size: 1.3rem;
+	  }
       h1 {
         font-size: 1.6rem;
       }
@@ -383,6 +509,18 @@
       .loading-text {
         font-size: 2.5rem;
       }
+      .dialog-box h2 {
+        font-size: 1.8rem;
+      }
+      .event-item span {
+        font-size: 1rem;
+      }
+      .event-item .emoji {
+        font-size: 1.4rem;
+      }
+      .event-item .description {
+        font-size: 0.9rem;
+      }
     }
   </style>
 </head>
@@ -390,6 +528,17 @@
   <!-- Loading Overlay -->
   <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-text">Initializing Data...</div>
+  </div>
+
+  <!-- Dialog Box for Events -->
+  <div class="dialog-overlay" id="eventsDialog">
+    <div class="dialog-box">
+      <div class="dialog-header">
+        <h2>Special Weather Events</h2>
+        <button class="dialog-close-btn" id="closeEventsDialog">✖</button>
+      </div>
+      <ul class="event-list" id="eventList"></ul>
+    </div>
   </div>
 
   <div class="container">
@@ -426,13 +575,14 @@
     </div>
     <div class="main-content">
       <h1>COH - Drought & Sewer Overflow Awareness</h1>
-      <p>Tap chart to update map date; Zoom/pan chart or map, then tap <em>Reset Zoom</em></p>
+      <p>Tap chart to update map date; Zoom/pan chart or map, then tap <em>Reset Zoom -</em><button id="downloadBtn" class="download-btn" title="Download SSO and Drought Data as CSV">📥</button></p>
       <div>
         <button id="weeklyBtn">Weekly</button>
         <button id="monthlyBtn" class="selected">Monthly</button>
         <button id="yearlyBtn">Yearly</button>
         <button id="resetZoomBtn">Reset Zoom</button>
         <button id="toggleMapBtn">Hide Map</button>
+        <button id="showEventsBtn">Show Events</button>
       </div>
       <div class="content-wrapper">
         <div class="chart-container">
@@ -912,32 +1062,32 @@
       });
     }
 
-	function toggleMapVisibility() {
-	  const mapContainer = document.querySelector(".map-container");
-	  const chartContainer = document.querySelector(".chart-container");
-	  const contentWrapper = document.querySelector(".content-wrapper");
+    function toggleMapVisibility() {
+      const mapContainer = document.querySelector(".map-container");
+      const chartContainer = document.querySelector(".chart-container");
+      const contentWrapper = document.querySelector(".content-wrapper");
 
-	  mapVisible = !mapVisible;
-	  mapContainer.style.display = mapVisible ? "block" : "none";
-	  document.getElementById("toggleMapBtn").textContent = mapVisible ? "Hide Map" : "Show Map";
+      mapVisible = !mapVisible;
+      mapContainer.style.display = mapVisible ? "block" : "none";
+      document.getElementById("toggleMapBtn").textContent = mapVisible ? "Hide Map" : "Show Map";
 
-	  if (window.innerWidth <= 768) {
-		chartContainer.style.height = mapVisible ? "50vh" : "calc(100vh - 9rem)"; // Adjusted for mobile header + buttons + footer
-		mapContainer.style.height = mapVisible ? "50vh" : "0"; // Explicitly set map height
-		contentWrapper.style.flexDirection = "column";
-	  } else {
-		contentWrapper.style.flexDirection = mapVisible ? "row" : "column";
-		chartContainer.style.height = mapVisible ? "100%" : "calc(100% - 1rem)"; // Leaves space for footer
-		mapContainer.style.height = mapVisible ? "100%" : "0"; // Explicitly set map height
-	  }
+      if (window.innerWidth <= 768) {
+        chartContainer.style.height = mapVisible ? "50vh" : "calc(100vh - 9rem)"; // Adjusted for mobile header + buttons + footer
+        mapContainer.style.height = mapVisible ? "50vh" : "0"; // Explicitly set map height
+        contentWrapper.style.flexDirection = "column";
+      } else {
+        contentWrapper.style.flexDirection = mapVisible ? "row" : "column";
+        chartContainer.style.height = mapVisible ? "100%" : "calc(100% - 1rem)"; // Leaves space for footer
+        mapContainer.style.height = mapVisible ? "100%" : "0"; // Explicitly set map height
+      }
 
-	  if (myChart) myChart.resize();
-	  if (mapVisible && mapView) {
-		setTimeout(() => {
-		  mapView.resize(); // Resize map after a short delay
-		}, 100); // 100ms delay to ensure DOM update
-	  }
-	}
+      if (myChart) myChart.resize();
+      if (mapVisible && mapView) {
+        setTimeout(() => {
+          mapView.resize(); // Resize map after a short delay
+        }, 100); // 100ms delay to ensure DOM update
+      }
+    }
 
     function toggleSidebar() {
       const mobileSidebar = document.getElementById("mobile-sidebar");
@@ -949,6 +1099,73 @@
         mobileSidebar.style.display = "none";
         desktopSidebar.style.display = "block";
       }
+    }
+
+    function showEventsDialog() {
+      const dialog = document.getElementById("eventsDialog");
+      const eventList = document.getElementById("eventList");
+      eventList.innerHTML = ""; // Clear existing content
+
+      const sortedEvents = [...specialWeatherEvents].sort((a, b) => b.date - a.date);
+
+      sortedEvents.forEach(event => {
+        const li = document.createElement("li");
+        li.className = "event-item";
+        li.innerHTML = `
+          <span><span class="emoji">${event.emoji}</span><span class="date">${formatDateForDisplay(event.date)}</span></span>
+          <span class="description">${event.event}</span>
+        `;
+        eventList.appendChild(li);
+      });
+
+      dialog.style.display = "flex";
+      dialog.addEventListener("click", handleOutsideClick);
+    }
+
+    function closeEventsDialog() {
+      const dialog = document.getElementById("eventsDialog");
+      dialog.style.display = "none";
+      dialog.removeEventListener("click", handleOutsideClick);
+    }
+
+    function handleOutsideClick(event) {
+      const dialog = document.getElementById("eventsDialog");
+      const dialogBox = document.querySelector(".dialog-box");
+      if (event.target === dialog && !dialogBox.contains(event.target)) {
+        closeEventsDialog();
+      }
+    }
+
+    function downloadCSV(data, filename) {
+      const csvContent = "data:text/csv;charset=utf-8," + data;
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function downloadChartData() {
+      const aggDrought = aggregateData(rawDroughtData, currentPeriod);
+      const aggSSO = aggregateSSOData(rawSSOFeatures, currentPeriod);
+
+      // Drought CSV
+      let droughtCSV = "Date,Exceptional (D4),Extreme (D3),Severe (D2),Moderate (D1),Abnormally Dry (D0),No Drought\n";
+      aggDrought.forEach(row => {
+        droughtCSV += `${formatDateForDisplay(row.date)},${row.d4},${row.d3},${row.d2},${row.d1},${row.d0},${row.none}\n`;
+      });
+
+      // SSO CSV
+      let ssoCSV = "Date,SSO Count\n";
+      aggSSO.forEach(row => {
+        ssoCSV += `${formatDateForDisplay(row.date)},${row.count}\n`;
+      });
+
+      // Download both files
+      downloadCSV(droughtCSV, `drought_data_${currentPeriod}_${formatDateForDisplay(new Date())}.csv`);
+      downloadCSV(ssoCSV, `sso_data_${currentPeriod}_${formatDateForDisplay(new Date())}.csv`);
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -1070,6 +1287,9 @@
             if (mapView) mapView.goTo({ center: [-95.3632715, 29.7632836], zoom: 10 });
             updateMap();
           });
+          document.getElementById("showEventsBtn").addEventListener("click", showEventsDialog);
+          document.getElementById("closeEventsDialog").addEventListener("click", closeEventsDialog);
+          document.getElementById("downloadBtn").addEventListener("click", downloadChartData);
         })
         .catch(error => {
           console.error("Error initializing:", error);
@@ -1094,7 +1314,6 @@
         mapContainer.style.height = mapVisible ? "100%" : "0";
       }
       if (myChart) myChart.resize();
-      // Removed mapView.resize()
     });
   </script>
 </body>
