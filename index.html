@@ -1152,25 +1152,25 @@
       return { start: startDate, end: endDate };
     }
 
-    function updateChart(aggDrought, aggSSO) {
-      myChart.data.datasets[0].data = aggDrought.map(r => ({ x: r.date, y: r.d4 }));
-      myChart.data.datasets[1].data = aggDrought.map(r => ({ x: r.date, y: r.d3 }));
-      myChart.data.datasets[2].data = aggDrought.map(r => ({ x: r.date, y: r.d2 }));
-      myChart.data.datasets[3].data = aggDrought.map(r => ({ x: r.date, y: r.d1 }));
-      myChart.data.datasets[4].data = aggDrought.map(r => ({ x: r.date, y: r.d0 }));
-      myChart.data.datasets[5].data = aggSSO.map(r => ({ x: r.date, y: r.count }));
-      myChart.options.plugins.title.text = `Drought & Public Sewer Overflow (${currentPeriod.charAt(0).toUpperCase() + currentPeriod.slice(1)})`;
-      myChart.options.plugins.annotation.annotations = [
-        ...specialWeatherEvents.filter(e => e.date >= selectedDateRange.start && e.date <= selectedDateRange.end).map((e, i) => ({
-          type: 'label', xValue: e.date, yValue: 100, content: e.emoji, color: '#ffffff', font: { size: 20 }, position: 'center', xAdjust: 0, yAdjust: -5, backgroundColor: 'rgba(0, 0, 0, 0)', borderWidth: 0
-        })),
-        {
-          type: 'line', id: 'cursorLine', mode: 'vertical', scaleID: 'x', value: aggSSO[aggSSO.length - 1].date,
-          borderColor: '#00d4ff', borderWidth: 2, label: { enabled: true, content: formatDateForDisplay(aggSSO[aggSSO.length - 1].date), position: 'top', backgroundColor: 'rgba(0, 212, 255, 0.8)', font: { size: 12 } }
-        }
-      ];
-      myChart.update();
+function updateChart(aggDrought, aggSSO) {
+  myChart.data.datasets[0].data = aggDrought.map(r => ({ x: r.date, y: r.d4 }));
+  myChart.data.datasets[1].data = aggDrought.map(r => ({ x: r.date, y: r.d3 }));
+  myChart.data.datasets[2].data = aggDrought.map(r => ({ x: r.date, y: r.d2 }));
+  myChart.data.datasets[3].data = aggDrought.map(r => ({ x: r.date, y: r.d1 }));
+  myChart.data.datasets[4].data = aggDrought.map(r => ({ x: r.date, y: r.d0 }));
+  myChart.data.datasets[5].data = aggSSO.map(r => ({ x: r.date, y: r.count }));
+  myChart.options.plugins.title.text = `Drought & Public Sewer Overflow (${currentPeriod.charAt(0).toUpperCase() + currentPeriod.slice(1)})`;
+  myChart.options.plugins.annotation.annotations = [
+    ...specialWeatherEvents.filter(e => e.date >= selectedDateRange.start && e.date <= selectedDateRange.end).map((e, i) => ({
+      type: 'label', xValue: e.date, yValue: 100, content: e.emoji, color: '#ffffff', font: { size: 20 }, position: 'center', xAdjust: 0, yAdjust: -5, backgroundColor: 'rgba(0, 0, 0, 0)', borderWidth: 0
+    })),
+    {
+      type: 'line', id: 'cursorLine', mode: 'vertical', scaleID: 'x', value: aggSSO.length > 0 ? aggSSO[aggSSO.length - 1].date : selectedDateRange.end, // Use the last SSO date or end of range
+      borderColor: '#00d4ff', borderWidth: 2, label: { enabled: true, content: aggSSO.length > 0 ? formatDateForDisplay(aggSSO[aggSSO.length - 1].date) : 'End', position: 'top', backgroundColor: 'rgba(0, 212, 255, 0.8)', font: { size: 12 } }
     }
+  ];
+  myChart.update();
+}
 
     function updateChartWithCurrentPeriod() {
       const aggDrought = aggregateData(rawDroughtData, currentPeriod);
@@ -1548,9 +1548,9 @@
 
 function initializeDateSlider() {
   const minDate = new Date("2019-01-01");
-  const maxDate = new Date("2025-03-16"); // Today
+  const maxDate = new Date();
   const defaultStart = new Date("2019-01-01");
- const defaultEnd = new Date();
+const defaultEnd = new Date();
 
   const slider = document.getElementById("dateSlider");
   const track = document.getElementById("dateSliderTrack");
@@ -1633,49 +1633,51 @@ function initializeDateSlider() {
     document.addEventListener("DOMContentLoaded", () => {
       toggleSidebar();
       showLoading();
-      Promise.all([fetchDroughtData(), fetchSSOData()])
-        .then(([droughtFeatures, ssoFeatures]) => {
-          rawDroughtData = droughtFeatures;
-          rawSSOFeatures = ssoFeatures;
-          createStructureTypeSwitch("#mobile-sidebar");
-          createStructureTypeSwitch("#desktop-sidebar");
-          createCauseCheckboxes("causeCheckboxes");
-          createCauseCheckboxes("causeCheckboxesDesktop");
+  Promise.all([fetchDroughtData(), fetchSSOData()])
+    .then(([droughtFeatures, ssoFeatures]) => {
+      rawDroughtData = droughtFeatures;
+      rawSSOFeatures = ssoFeatures;
+      createStructureTypeSwitch("#mobile-sidebar");
+      createStructureTypeSwitch("#desktop-sidebar");
+      createCauseCheckboxes("causeCheckboxes");
+      createCauseCheckboxes("causeCheckboxesDesktop");
 
-          const aggDrought = aggregateData(rawDroughtData, 'monthly');
-          const aggSSO = aggregateSSOData(rawSSOFeatures, 'monthly');
+      // Initialize with the full range from defaultStart to defaultEnd
+      initializeDateSlider(); // Ensure selectedDateRange is set first
+      const aggDrought = aggregateData(rawDroughtData, 'monthly');
+      const aggSSO = aggregateSSOData(rawSSOFeatures, 'monthly');
 
-          const ctx = document.getElementById("droughtChart").getContext("2d");
-          myChart = new Chart(ctx, {
-            type: "line",
-            data: {
-              datasets: [
-                { label: "Exceptional", data: aggDrought.map(r => ({ x: r.date, y: r.d4 })), borderColor: "#4F0012", backgroundColor: "rgba(79, 0, 18, 0.7)", fill: "origin", tension: 0.1, pointRadius: 0, order: 1 },
-                { label: "Extreme", data: aggDrought.map(r => ({ x: r.date, y: r.d3 })), borderColor: "#9C0924", backgroundColor: "rgba(156, 9, 36, 0.7)", fill: "-1", tension: 0.1, pointRadius: 0, order: 1 },
-                { label: "Severe", data: aggDrought.map(r => ({ x: r.date, y: r.d2 })), borderColor: "#EC692D", backgroundColor: "rgba(236, 105, 45, 0.7)", fill: "-1", tension: 0.1, pointRadius: 0, order: 1 },
-                { label: "Moderate", data: aggDrought.map(r => ({ x: r.date, y: r.d1 })), borderColor: "#F09D33", backgroundColor: "rgba(240, 157, 51, 0.7)", fill: "-1", tension: 0.1, pointRadius: 0, order: 1 },
-                { label: "Abn. Dry", data: aggDrought.map(r => ({ x: r.date, y: r.d0 })), borderColor: "#FDEFA4", backgroundColor: "rgba(253, 239, 164, 0.7)", fill: "-1", tension: 0.1, pointRadius: 0, order: 1 },
-                { label: "SSO Count", data: aggSSO.map(r => ({ x: r.date, y: r.count })), borderColor: "#00FF00", backgroundColor: "rgba(0, 255, 0, 0.7)", fill: false, tension: 0, pointRadius: 3, yAxisID: "y2", order: 0 },
-                { label: "Special Weather Events", data: specialWeatherEvents.map(event => ({ x: event.date, y: 100, event: event.event, date: event.date.toISOString().split('T')[0] })), type: "scatter", yAxisID: "y", pointRadius: 0, pointHoverRadius: 50, showLine: false, order: -1, tooltip: { callbacks: { label: ctx => `${ctx.raw.date} | ${ctx.raw.event}` } } }
+      const ctx = document.getElementById("droughtChart").getContext("2d");
+      myChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          datasets: [
+            { label: "Exceptional", data: aggDrought.map(r => ({ x: r.date, y: r.d4 })), borderColor: "#4F0012", backgroundColor: "rgba(79, 0, 18, 0.7)", fill: "origin", tension: 0.1, pointRadius: 0, order: 1 },
+            { label: "Extreme", data: aggDrought.map(r => ({ x: r.date, y: r.d3 })), borderColor: "#9C0924", backgroundColor: "rgba(156, 9, 36, 0.7)", fill: "-1", tension: 0.1, pointRadius: 0, order: 1 },
+            { label: "Severe", data: aggDrought.map(r => ({ x: r.date, y: r.d2 })), borderColor: "#EC692D", backgroundColor: "rgba(236, 105, 45, 0.7)", fill: "-1", tension: 0.1, pointRadius: 0, order: 1 },
+            { label: "Moderate", data: aggDrought.map(r => ({ x: r.date, y: r.d1 })), borderColor: "#F09D33", backgroundColor: "rgba(240, 157, 51, 0.7)", fill: "-1", tension: 0.1, pointRadius: 0, order: 1 },
+            { label: "Abn. Dry", data: aggDrought.map(r => ({ x: r.date, y: r.d0 })), borderColor: "#FDEFA4", backgroundColor: "rgba(253, 239, 164, 0.7)", fill: "-1", tension: 0.1, pointRadius: 0, order: 1 },
+            { label: "SSO Count", data: aggSSO.map(r => ({ x: r.date, y: r.count })), borderColor: "#00FF00", backgroundColor: "rgba(0, 255, 0, 0.7)", fill: false, tension: 0, pointRadius: 3, yAxisID: "y2", order: 0 },
+            { label: "Special Weather Events", data: specialWeatherEvents.map(event => ({ x: event.date, y: 100, event: event.event, date: event.date.toISOString().split('T')[0] })), type: "scatter", yAxisID: "y", pointRadius: 0, pointHoverRadius: 50, showLine: false, order: -1, tooltip: { callbacks: { label: ctx => `${ctx.raw.date} | ${ctx.raw.event}` } } }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+          scales: { x: { type: "time", time: { unit: "month", tooltipFormat: "yyyy-MM-dd" }, ticks: { color: "#00d4ff" }, grid: { color: "rgba(0, 212, 255, 0.2)" } }, y: { stacked: true, min: 0, suggestedMax: 110, ticks: { color: "#00d4ff" }, grid: { color: "rgba(0, 212, 255, 0.2)" } }, y2: { type: "linear", position: "right", ticks: { color: "#00ff00" }, grid: { drawOnChartArea: false } } },
+          plugins: {
+            legend: { labels: { color: "#00d4ff", font: { family: 'Orbitron' } }, position: "top" },
+            title: { display: true, text: "Drought & Public Sewer Overflow (Monthly)", color: "#00d4ff", font: { size: 16, family: 'Orbitron' } },
+            zoom: { zoom: { wheel: { enabled: true }, drag: { enabled: true }, mode: "x" }, pan: { enabled: true, mode: "x" } },
+            annotation: {
+              annotations: [
+                ...specialWeatherEvents.filter(e => e.date >= selectedDateRange.start && e.date <= selectedDateRange.end).map((e, i) => ({ type: 'label', xValue: e.date, yValue: 100, content: e.emoji, color: '#ffffff', font: { size: 20 }, position: 'center', xAdjust: 0, yAdjust: -5, backgroundColor: 'rgba(0, 0, 0, 0)', borderWidth: 0 })),
+                { type: 'line', id: 'cursorLine', mode: 'vertical', scaleID: 'x', value: aggSSO.length > 0 ? aggSSO[aggSSO.length - 1].date : selectedDateRange.end, borderColor: '#00d4ff', borderWidth: 2, label: { enabled: true, content: aggSSO.length > 0 ? formatDateForDisplay(aggSSO[aggSSO.length - 1].date) : 'End', position: 'top', backgroundColor: 'rgba(0, 212, 255, 0.8)', font: { size: 12, family: 'Orbitron' } } }
               ]
             },
-            options: {
-              responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
-              scales: { x: { type: "time", time: { unit: "month", tooltipFormat: "yyyy-MM-dd" }, ticks: { color: "#00d4ff" }, grid: { color: "rgba(0, 212, 255, 0.2)" } }, y: { stacked: true, min: 0, suggestedMax: 110, ticks: { color: "#00d4ff" }, grid: { color: "rgba(0, 212, 255, 0.2)" } }, y2: { type: "linear", position: "right", ticks: { color: "#00ff00" }, grid: { drawOnChartArea: false } } },
-              plugins: {
-                legend: { labels: { color: "#00d4ff", font: { family: 'Orbitron' } }, position: "top" },
-                title: { display: true, text: "Drought & Public Sewer Overflow (Monthly)", color: "#00d4ff", font: { size: 16, family: 'Orbitron' } },
-                zoom: { zoom: { wheel: { enabled: true }, drag: { enabled: true }, mode: "x" }, pan: { enabled: true, mode: "x" } },
-                annotation: {
-                  annotations: [
-                    ...specialWeatherEvents.map((e, i) => ({ type: 'label', xValue: e.date, yValue: 100, content: e.emoji, color: '#ffffff', font: { size: 20 }, position: 'center', xAdjust: 0, yAdjust: -5, backgroundColor: 'rgba(0, 0, 0, 0)', borderWidth: 0 })),
-                    { type: 'line', id: 'cursorLine', mode: 'vertical', scaleID: 'x', value: aggSSO[aggSSO.length - 1].date, borderColor: '#00d4ff', borderWidth: 2, label: { enabled: true, content: 'Latest', position: 'top', backgroundColor: 'rgba(0, 212, 255, 0.8)', font: { size: 12, family: 'Orbitron' } } }
-                  ]
-                },
-                tooltip: { mode: "index", intersect: false, backgroundColor: 'rgba(10, 10, 30, 0.9)', titleFont: { family: 'Orbitron' }, bodyFont: { family: 'Orbitron' }, callbacks: { label: ctx => ctx.dataset.label === "Special Weather Events" ? `${ctx.raw.date} | ${ctx.raw.event}` : `${ctx.dataset.label}: ${ctx.raw.y}` } }
-              }
-            }
-          });
+            tooltip: { mode: "index", intersect: false, backgroundColor: 'rgba(10, 10, 30, 0.9)', titleFont: { family: 'Orbitron' }, bodyFont: { family: 'Orbitron' }, callbacks: { label: ctx => ctx.dataset.label === "Special Weather Events" ? `${ctx.raw.date} | ${ctx.raw.event}` : `${ctx.dataset.label}: ${ctx.raw.y}` } }
+          }
+        }
+      });
 
           initializeCumulativeChart();
           makeChartDraggable();
@@ -1711,6 +1713,9 @@ function initializeDateSlider() {
           document.getElementById("resetHistoryBtnMobile").style.display = "none";
           document.getElementById("resetHistoryBtnDesktop").style.display = "none";
           document.getElementById("downloadBtn").style.display = "inline-flex"; // Explicitly ensure visibility
+		        // Force an initial update with the correct range
+      updateChartWithCurrentPeriod();
+      updateMap();
         })
         .catch(error => {
           console.error("Error initializing:", error);
