@@ -141,7 +141,8 @@
       box-shadow: 0 2px 6px rgba(0, 212, 255, 0.4);
       transition: all 0.2s ease;
       vertical-align: middle;
-      margin-left: 0.5rem;
+      width: 32px;
+      height: 32px;
     }
     .download-btn:hover {
       transform: translateY(-1px);
@@ -149,6 +150,111 @@
       background: linear-gradient(45deg, #00eaff, #008cff);
       border-color: rgba(0, 212, 255, 0.8);
     }
+    /* Updated Control Layout Styles */
+    .controls-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0.5rem 0;
+      width: 100%;
+      max-width: 100%;
+    }
+    .control-group {
+      display: flex;
+      gap: 0.3rem;
+      align-items: center;
+      background: rgba(10, 10, 30, 0.9);
+      padding: 0.3rem;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0, 212, 255, 0.2);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+    }
+    .download-group {
+      margin-left: auto;
+    }
+    @media (max-width: 768px) {
+      .controls-container {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .control-group {
+        width: 100%;
+        justify-content: center;
+      }
+      .download-group {
+        margin-left: 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+      .download-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+      }
+    }
+    @media (min-width: 769px) {
+      .controls-container {
+        flex-direction: row;
+      }
+      .control-group {
+        flex-wrap: nowrap;
+      }
+    }
+    /* Custom Date Range Slider Styles */
+    .date-slider-container {
+      width: 80%;
+      max-width: 600px;
+      margin: 0.5rem auto;
+      padding: 0.5rem;
+      background: rgba(10, 10, 30, 0.9);
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2), inset 0 0 10px rgba(0, 212, 255, 0.1);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      position: relative;
+    }
+    .date-slider {
+      position: relative;
+      height: 8px;
+      background: linear-gradient(90deg, #1a1a33, #0d0d1a);
+      border-radius: 4px;
+      box-shadow: inset 0 0 5px rgba(0, 212, 255, 0.3);
+    }
+    .date-slider-track {
+      position: absolute;
+      height: 100%;
+      background: linear-gradient(90deg, #00d4ff, #007bff);
+      box-shadow: 0 0 8px rgba(0, 212, 255, 0.6);
+      border-radius: 4px;
+    }
+    .date-slider-handle {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: linear-gradient(45deg, #00d4ff, #007bff);
+      border: 2px solid #fff;
+      border-radius: 50%;
+      top: -4px;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(0, 212, 255, 0.8);
+      transition: transform 0.2s ease;
+    }
+    .date-slider-handle:hover,
+    .date-slider-handle.active {
+      transform: scale(1.2);
+      background: linear-gradient(45deg, #00eaff, #008cff);
+    }
+    #dateRangeLabel {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #00d4ff;
+      text-shadow: 0 0 6px #00d4ff;
+      margin-top: 0.5rem;
+      font-family: 'Orbitron', sans-serif;
+    }
+    /* Rest of your existing styles remain unchanged below */
     .checkbox-group {
       margin-bottom: 0.5rem;
     }
@@ -334,7 +440,6 @@
       box-shadow: 0 4px 12px rgba(255, 51, 102, 0.6);
       background: linear-gradient(45deg, #ff5588, #dd2255);
     }
-    /* Loading Overlay */
     .loading-overlay {
       position: fixed;
       top: 0;
@@ -479,7 +584,6 @@
       text-shadow: 0 0 10px #ff5588;
       transform: scale(1.1);
     }
-    /* SSO History Display */
     .sso-history {
       width: 100%;
       text-align: center;
@@ -492,7 +596,6 @@
       margin-top: 0.5rem;
       display: none;
     }
-    /* Floating Cumulative Chart */
     .floating-chart {
       position: fixed;
       top: 20%;
@@ -561,7 +664,6 @@
       from { opacity: 0; transform: translateY(-20px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    /* Desktop Styles */
     @media (min-width: 769px) {
       .container {
         flex-direction: row;
@@ -658,12 +760,9 @@
   </style>
 </head>
 <body>
-  <!-- Loading Overlay -->
   <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-text">Initializing Data...</div>
   </div>
-
-  <!-- Dialog Box for Events -->
   <div class="dialog-overlay" id="eventsDialog">
     <div class="dialog-box">
       <div class="dialog-header">
@@ -673,8 +772,6 @@
       <ul class="event-list" id="eventList"></ul>
     </div>
   </div>
-
-  <!-- Floating Cumulative Chart -->
   <div class="floating-chart" id="cumulativeChartContainer">
     <div class="floating-chart-header" id="floatingChartHeader">
       <h3>Cumulative SSO</h3>
@@ -683,9 +780,7 @@
     <canvas id="cumulativeSSOChart"></canvas>
     <div class="resize-handle" id="resizeHandle"></div>
   </div>
-
   <div class="container">
-    <!-- Mobile Sidebar with <details> -->
     <details class="sidebar" id="mobile-sidebar">
       <summary>Filter</summary>
       <div class="sidebar-content">
@@ -709,7 +804,6 @@
         </div>
       </div>
     </details>
-    <!-- Desktop Sidebar without <details> -->
     <div class="sidebar" id="desktop-sidebar" style="display: none;">
       <div class="sidebar-content">
         <h3>SSO by Struct. Type</h3>
@@ -734,14 +828,28 @@
     </div>
     <div class="main-content">
       <h1>COH - Drought & Public Sewer Overflow Awareness</h1>
-      <p>Tap chart to update map date; Zoom/pan chart or map, then tap <em>Reset Zoom -</em><button id="downloadBtn" class="download-btn" title="Download SSO and Drought Data as CSV">📥</button></p>
-      <div>
-        <button id="weeklyBtn">Weekly</button>
-        <button id="monthlyBtn" class="selected">Monthly</button>
-        <button id="yearlyBtn">Yearly</button>
-        <button id="resetZoomBtn">Reset Zoom</button>
-        <button id="toggleMapBtn">Hide Map</button>
-        <button id="showEventsBtn">Show Events</button>
+      <div class="date-slider-container">
+        <div class="date-slider" id="dateSlider">
+          <div class="date-slider-track" id="dateSliderTrack"></div>
+          <div class="date-slider-handle" id="dateSliderMin"></div>
+          <div class="date-slider-handle" id="dateSliderMax"></div>
+        </div>
+        <div id="dateRangeLabel"></div>
+      </div>
+      <div class="controls-container">
+        <div class="control-group">
+          <button id="weeklyBtn">Weekly</button>
+          <button id="monthlyBtn" class="selected">Monthly</button>
+          <button id="yearlyBtn">Yearly</button>
+          <button id="resetZoomBtn">Reset Zoom</button>
+        </div>
+        <div class="control-group">
+          <button id="toggleMapBtn">Hide Map</button>
+          <button id="showEventsBtn">Show Events</button>
+        </div>
+        <div class="control-group download-group">
+          <button id="downloadBtn" class="download-btn" title="Download Chart Data as CSV">↓</button>
+        </div>
       </div>
       <div class="content-wrapper">
         <div class="chart-container">
@@ -757,7 +865,7 @@
       </div>
     </div>
   </div>
-    <script>
+  <script>
     const droughtApiUrl = "https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/US_Drought_Intensity_v1/FeatureServer/1/query" +
       "?where=admin_fips%3D48201" +
       "&outFields=*" +
@@ -771,7 +879,7 @@
     let selectedCauses = new Set();
     let selectedStructureGroup = "All";
     let currentPeriod = 'monthly';
-    let selectedDate = null;
+    let selectedDateRange = { start: new Date("2024-01-01"), end: new Date("2025-03-16") };
     let mapVisible = true;
     let isPlaying = false;
     let animationInterval = null;
@@ -947,9 +1055,10 @@
     }
 
     function aggregateData(data, period) {
-      if (period === 'weekly') return data;
+      const filteredData = data.filter(r => r.date >= selectedDateRange.start && r.date <= selectedDateRange.end);
+      if (period === 'weekly') return filteredData;
       const groups = {};
-      data.forEach(record => {
+      filteredData.forEach(record => {
         const date = new Date(record.date);
         const key = period === 'monthly' ? `${date.getFullYear()}-${date.getMonth() + 1}` : `${date.getFullYear()}`;
         groups[key] = groups[key] || [];
@@ -976,9 +1085,9 @@
     }
 
     function aggregateSSOData(features, period) {
-      let filteredFeatures = features;
-      if (selectedStructureGroup === "Main") filteredFeatures = features.filter(f => sewerMainTypes.includes(f.attributes.STRUCTURETYPE));
-      else if (selectedStructureGroup === "Service Lateral") filteredFeatures = features.filter(f => !sewerMainTypes.includes(f.attributes.STRUCTURETYPE) || !f.attributes.STRUCTURETYPE);
+      let filteredFeatures = features.filter(f => new Date(f.attributes.STARTDATE) >= selectedDateRange.start && new Date(f.attributes.STARTDATE) <= selectedDateRange.end);
+      if (selectedStructureGroup === "Main") filteredFeatures = filteredFeatures.filter(f => sewerMainTypes.includes(f.attributes.STRUCTURETYPE));
+      else if (selectedStructureGroup === "Service Lateral") filteredFeatures = filteredFeatures.filter(f => !sewerMainTypes.includes(f.attributes.STRUCTURETYPE) || !f.attributes.STRUCTURETYPE);
       filteredFeatures = selectedCauses.size === 0 || selectedCauses.size === uniqueCauses.length ? filteredFeatures : filteredFeatures.filter(f => selectedCauses.has(f.attributes.CAUSE || 'Unknown'));
 
       const groups = {};
@@ -1003,7 +1112,7 @@
     }
 
     function aggregateCumulativeSSOData(features, endDate) {
-      let filteredFeatures = features.filter(f => new Date(f.attributes.STARTDATE) <= endDate);
+      let filteredFeatures = features.filter(f => new Date(f.attributes.STARTDATE) <= endDate && new Date(f.attributes.STARTDATE) >= selectedDateRange.start);
       if (selectedStructureGroup === "Main") filteredFeatures = filteredFeatures.filter(f => sewerMainTypes.includes(f.attributes.STRUCTURETYPE));
       else if (selectedStructureGroup === "Service Lateral") filteredFeatures = filteredFeatures.filter(f => !sewerMainTypes.includes(f.attributes.STRUCTURETYPE) || !f.attributes.STRUCTURETYPE);
       filteredFeatures = selectedCauses.size === 0 || selectedCauses.size === uniqueCauses.length ? filteredFeatures : filteredFeatures.filter(f => selectedCauses.has(f.attributes.CAUSE || 'Unknown'));
@@ -1052,12 +1161,12 @@
       myChart.data.datasets[5].data = aggSSO.map(r => ({ x: r.date, y: r.count }));
       myChart.options.plugins.title.text = `Drought & Public Sewer Overflow (${currentPeriod.charAt(0).toUpperCase() + currentPeriod.slice(1)})`;
       myChart.options.plugins.annotation.annotations = [
-        ...specialWeatherEvents.map((e, i) => ({
+        ...specialWeatherEvents.filter(e => e.date >= selectedDateRange.start && e.date <= selectedDateRange.end).map((e, i) => ({
           type: 'label', xValue: e.date, yValue: 100, content: e.emoji, color: '#ffffff', font: { size: 20 }, position: 'center', xAdjust: 0, yAdjust: -5, backgroundColor: 'rgba(0, 0, 0, 0)', borderWidth: 0
         })),
         {
-          type: 'line', id: 'cursorLine', mode: 'vertical', scaleID: 'x', value: selectedDate || aggSSO[aggSSO.length - 1].date,
-          borderColor: '#00d4ff', borderWidth: 2, label: { enabled: true, content: selectedDate ? formatDateForDisplay(selectedDate) : 'Latest', position: 'top', backgroundColor: 'rgba(0, 212, 255, 0.8)', font: { size: 12 } }
+          type: 'line', id: 'cursorLine', mode: 'vertical', scaleID: 'x', value: aggSSO[aggSSO.length - 1].date,
+          borderColor: '#00d4ff', borderWidth: 2, label: { enabled: true, content: formatDateForDisplay(aggSSO[aggSSO.length - 1].date), position: 'top', backgroundColor: 'rgba(0, 212, 255, 0.8)', font: { size: 12 } }
         }
       ];
       myChart.update();
@@ -1097,26 +1206,12 @@
         }, err => reject(err));
       });
     }
-
-    function updateMap() {
+	    function updateMap() {
       if (!mapView) return;
       require(["esri/layers/FeatureLayer"], (FeatureLayer) => {
         const ssoLayer = mapView.map.layers.find(layer => layer.url.includes("RSSO_Package"));
         if (!ssoLayer) return;
-        let ssoWhereClause = "System LIKE '%ublic%' AND STARTDATE >= '2019-01-01'";
-        if (selectedDate) {
-          const { start, end } = getPeriodDateRange(selectedDate, currentPeriod);
-          const startStr = formatDateForDisplay(start);
-          const endStr = formatDateForDisplay(end);
-          ssoWhereClause += ` AND STARTDATE >= '${startStr}' AND STARTDATE <= '${endStr}'`;
-        } else {
-          const aggSSO = aggregateSSOData(rawSSOFeatures, currentPeriod);
-          const latestDate = aggSSO[aggSSO.length - 1].date;
-          const { start, end } = getPeriodDateRange(latestDate, currentPeriod);
-          const startStr = formatDateForDisplay(start);
-          const endStr = formatDateForDisplay(end);
-          ssoWhereClause += ` AND STARTDATE >= '${startStr}' AND STARTDATE <= '${endStr}'`;
-        }
+        let ssoWhereClause = `System LIKE '%ublic%' AND STARTDATE >= '${formatDateForDisplay(selectedDateRange.start)}' AND STARTDATE <= '${formatDateForDisplay(selectedDateRange.end)}'`;
         if (selectedStructureGroup === "Main") ssoWhereClause += ` AND STRUCTURETYPE IN ('${sewerMainTypes.join("','")}')`;
         else if (selectedStructureGroup === "Service Lateral") ssoWhereClause += ` AND (STRUCTURETYPE NOT IN ('${sewerMainTypes.join("','")}') OR STRUCTURETYPE IS NULL)`;
         if (selectedCauses.size > 0 && selectedCauses.size < uniqueCauses.length) {
@@ -1132,9 +1227,7 @@
       require(["esri/layers/FeatureLayer"], (FeatureLayer) => {
         const ssoLayer = mapView.map.layers.find(layer => layer.url.includes("RSSO_Package"));
         if (!ssoLayer) return;
-        let ssoWhereClause = "System LIKE '%ublic%' AND STARTDATE >= '2019-01-01'";
-        const endStr = formatDateForDisplay(endDate);
-        ssoWhereClause += ` AND STARTDATE <= '${endStr}'`;
+        let ssoWhereClause = `System LIKE '%ublic%' AND STARTDATE >= '${formatDateForDisplay(selectedDateRange.start)}' AND STARTDATE <= '${formatDateForDisplay(endDate)}'`;
         if (selectedStructureGroup === "Main") ssoWhereClause += ` AND STRUCTURETYPE IN ('${sewerMainTypes.join("','")}')`;
         else if (selectedStructureGroup === "Service Lateral") ssoWhereClause += ` AND (STRUCTURETYPE NOT IN ('${sewerMainTypes.join("','")}') OR STRUCTURETYPE IS NULL)`;
         if (selectedCauses.size > 0 && selectedCauses.size < uniqueCauses.length) {
@@ -1150,7 +1243,7 @@
         historyDiv.style.display = "block";
         const structureText = selectedStructureGroup === "All" ? "All Structures" : selectedStructureGroup;
         let causesText = selectedCauses.size === 0 || selectedCauses.size === uniqueCauses.length ? "All Causes" : Object.keys(groupCauses(Array.from(selectedCauses))).filter(group => groupCauses(Array.from(selectedCauses))[group].length > 0).join(", ");
-        historyDiv.textContent = `[2019-01 -> ${formatMonthForDisplay(endDate)}] | ${structureText} | ${causesText}`;
+        historyDiv.textContent = `[${formatMonthForDisplay(selectedDateRange.start)} -> ${formatMonthForDisplay(endDate)}] | ${structureText} | ${causesText}`;
       });
     }
 
@@ -1173,95 +1266,48 @@
       });
       const historyDiv = document.getElementById("ssoHistory");
       historyDiv.style.display = "none";
-      historyDiv.textContent = "[2019-01 -> Current]";
+      historyDiv.textContent = `[${formatMonthForDisplay(selectedDateRange.start)} -> ${formatMonthForDisplay(selectedDateRange.end)}]`;
     }
 
-function initializeCumulativeChart() {
-  const ctx = document.getElementById("cumulativeSSOChart").getContext("2d");
-  cumulativeChart = new Chart(ctx, {
-    type: "line",
-    data: {
-      datasets: [
-        { label: "Cumulative SSO", data: [], borderColor: "#00ff00", backgroundColor: "rgba(0, 255, 0, 0.2)", fill: true, tension: 0.1, pointRadius: 0, pointHitRadius: 10 },
-        { label: "Weather Events", data: [], type: "scatter", pointStyle: "circle", pointRadius: 8, pointBackgroundColor: "#ff3366", pointBorderColor: "#ffffff", pointBorderWidth: 2, showLine: false, pointHitRadius: 15 }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      layout: {
-        padding: {
-          bottom: 40 // Increase bottom padding to make room for rotated labels
-        }
-      },
-      scales: {
-        x: { 
-          type: "time", 
-          time: { 
-            unit: "month", 
-            displayFormats: { month: "MMM yyyy" },
-            tooltipFormat: "yyyy-MM-dd"
-          }, 
-          ticks: { 
-            color: "#00d4ff", 
-            maxRotation: 45, // Rotate labels for better fit
-            minRotation: 45,
-            autoSkip: true, // Skip labels if they overlap
-            maxTicksLimit: 12, // Slightly increase to show more labels if space allows
-            font: { size: 12, family: 'Orbitron' }, // Ensure readable font size
-            padding: 10 // Add padding between ticks and chart area
-          }, 
-          grid: { color: "rgba(0, 212, 255, 0.2)" } 
+    function initializeCumulativeChart() {
+      const ctx = document.getElementById("cumulativeSSOChart").getContext("2d");
+      cumulativeChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          datasets: [
+            { label: "Cumulative SSO", data: [], borderColor: "#00ff00", backgroundColor: "rgba(0, 255, 0, 0.2)", fill: true, tension: 0.1, pointRadius: 0, pointHitRadius: 10 },
+            { label: "Weather Events", data: [], type: "scatter", pointStyle: "circle", pointRadius: 8, pointBackgroundColor: "#ff3366", pointBorderColor: "#ffffff", pointBorderWidth: 2, showLine: false, pointHitRadius: 15 }
+          ]
         },
-        y: { 
-          min: 0, 
-          ticks: { 
-            color: "#00d4ff", 
-            font: { family: 'Orbitron' } 
-          }, 
-          grid: { color: "rgba(0, 212, 255, 0.2)" } 
-        }
-      },
-      plugins: {
-        legend: { labels: { color: "#00d4ff", font: { family: 'Orbitron' } } },
-        title: { display: true, text: "Cumulative SSO Over Time", color: "#00d4ff", font: { size: 14, family: 'Orbitron' } },
-        tooltip: { 
-          enabled: true,
-          mode: "index",
-          intersect: false,
-          position: "nearest",
-          backgroundColor: "rgba(10, 10, 30, 0.95)",
-          titleFont: { family: "Orbitron", size: 14, weight: "bold" },
-          bodyFont: { family: "Orbitron", size: 12 },
-          padding: 10,
-          cornerRadius: 6,
-          borderColor: "rgba(0, 212, 255, 0.5)",
-          borderWidth: 1,
-          titleColor: "#00d4ff",
-          bodyColor: "#e0e0e0",
-          callbacks: {
-            title: (tooltipItems) => {
-              const date = new Date(tooltipItems[0].raw.x);
-              return formatDateForDisplay(date);
-            },
-            label: (ctx) => {
-              if (ctx.dataset.label === "Cumulative SSO") {
-                return `Cumulative SSO: ${ctx.parsed.y}`;
-              } else if (ctx.dataset.label === "Weather Events" && ctx.raw.event) {
-                return `${ctx.raw.event} (${formatDateForDisplay(ctx.raw.x)})`;
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: { bottom: 40 } },
+          scales: {
+            x: { type: "time", time: { unit: "month", displayFormats: { month: "MMM yyyy" }, tooltipFormat: "yyyy-MM-dd" }, ticks: { color: "#00d4ff", maxRotation: 45, minRotation: 45, autoSkip: true, maxTicksLimit: 12, font: { size: 12, family: 'Orbitron' }, padding: 10 }, grid: { color: "rgba(0, 212, 255, 0.2)" } },
+            y: { min: 0, ticks: { color: "#00d4ff", font: { family: 'Orbitron' } }, grid: { color: "rgba(0, 212, 255, 0.2)" } }
+          },
+          plugins: {
+            legend: { labels: { color: "#00d4ff", font: { family: 'Orbitron' } } },
+            title: { display: true, text: "Cumulative SSO Over Time", color: "#00d4ff", font: { size: 14, family: 'Orbitron' } },
+            tooltip: {
+              enabled: true, mode: "index", intersect: false, position: "nearest", backgroundColor: "rgba(10, 10, 30, 0.95)",
+              titleFont: { family: "Orbitron", size: 14, weight: "bold" }, bodyFont: { family: "Orbitron", size: 12 }, padding: 10, cornerRadius: 6,
+              borderColor: "rgba(0, 212, 255, 0.5)", borderWidth: 1, titleColor: "#00d4ff", bodyColor: "#e0e0e0",
+              callbacks: {
+                title: (tooltipItems) => formatDateForDisplay(new Date(tooltipItems[0].raw.x)),
+                label: (ctx) => ctx.dataset.label === "Cumulative SSO" ? `Cumulative SSO: ${ctx.parsed.y}` : (ctx.dataset.label === "Weather Events" && ctx.raw.event ? `${ctx.raw.event} (${formatDateForDisplay(ctx.raw.x)})` : "")
               }
-              return "";
             }
           }
         }
-      }
+      });
     }
-  });
-}
+
     function updateCumulativeChart(endDate) {
       const cumulativeData = aggregateCumulativeSSOData(rawSSOFeatures, endDate);
       const weatherData = specialWeatherEvents
-        .filter(event => event.date <= endDate)
+        .filter(event => event.date <= endDate && event.date >= selectedDateRange.start)
         .map(event => {
           const closestCumulative = cumulativeData.reduce((prev, curr) => Math.abs(curr.date - event.date) < Math.abs(prev.date - event.date) ? curr : prev);
           return { x: event.date, y: closestCumulative.count, event: event.event, emoji: event.emoji };
@@ -1277,66 +1323,65 @@ function initializeCumulativeChart() {
       cumulativeChart.update();
     }
 
-function toggleHistoryAnimation() {
-  const playBtnMobile = document.getElementById("playHistoryBtnMobile");
-  const playBtnDesktop = document.getElementById("playHistoryBtnDesktop");
-  const resetBtnMobile = document.getElementById("resetHistoryBtnMobile");
-  const resetBtnDesktop = document.getElementById("resetHistoryBtnDesktop");
-  const playBtn = window.innerWidth <= 768 ? playBtnMobile : playBtnDesktop;
-  const resetBtn = window.innerWidth <= 768 ? resetBtnMobile : resetBtnDesktop;
+    function toggleHistoryAnimation() {
+      const playBtnMobile = document.getElementById("playHistoryBtnMobile");
+      const playBtnDesktop = document.getElementById("playHistoryBtnDesktop");
+      const resetBtnMobile = document.getElementById("resetHistoryBtnMobile");
+      const resetBtnDesktop = document.getElementById("resetHistoryBtnDesktop");
+      const playBtn = window.innerWidth <= 768 ? playBtnMobile : playBtnDesktop;
+      const resetBtn = window.innerWidth <= 768 ? resetBtnMobile : resetBtnDesktop;
 
-  if (!isPlaying) {
-    isPlaying = true;
-    playBtn.textContent = "Pause";
-    playBtn.classList.add("playing");
-    resetBtn.style.display = "block"; // Show reset only when animation starts
-    document.getElementById("cumulativeChartContainer").style.display = "block";
-    const monthlyDates = getMonthlyDates(new Date("2019-01-01"), new Date());
-    if (animationInterval) clearInterval(animationInterval);
+      if (!isPlaying) {
+        isPlaying = true;
+        playBtn.textContent = "Pause";
+        playBtn.classList.add("playing");
+        resetBtn.style.display = "block";
+        document.getElementById("cumulativeChartContainer").style.display = "block";
+        const monthlyDates = getMonthlyDates(selectedDateRange.start, selectedDateRange.end);
+        if (animationInterval) clearInterval(animationInterval);
 
-    animationInterval = setInterval(() => {
-      if (animationIndex >= monthlyDates.length) {
-        clearInterval(animationInterval);
+        animationIndex = 0;
+        currentAnimationDate = monthlyDates[0];
+        animationInterval = setInterval(() => {
+          if (animationIndex >= monthlyDates.length) {
+            clearInterval(animationInterval);
+            isPlaying = false;
+            playBtn.textContent = "Play SSO History";
+            playBtn.classList.remove("playing");
+            animationIndex = 0;
+            return;
+          }
+          currentAnimationDate = monthlyDates[animationIndex];
+          updateMapCumulative(currentAnimationDate);
+          updateCumulativeChart(currentAnimationDate);
+          animationIndex++;
+        }, 200);
+      } else {
         isPlaying = false;
-        playBtn.textContent = "Play SSO History";
+        playBtn.textContent = "Resume";
         playBtn.classList.remove("playing");
-        // Removed: resetBtn.style.display = "none";
-        // Removed: document.getElementById("cumulativeChartContainer").style.display = "none";
-        // Removed: resetMapToNormal();
-        animationIndex = 0; // Reset index but keep cumulative view
-        return;
+        clearInterval(animationInterval);
       }
-      currentAnimationDate = monthlyDates[animationIndex];
-      updateMapCumulative(currentAnimationDate);
-      updateCumulativeChart(currentAnimationDate);
-      animationIndex++;
-    }, 200);
-  } else {
-    isPlaying = false;
-    playBtn.textContent = "Resume";
-    playBtn.classList.remove("playing");
-    clearInterval(animationInterval);
-  }
-}
+    }
 
-function resetHistoryAnimation() {
-  const playBtnMobile = document.getElementById("playHistoryBtnMobile");
-  const playBtnDesktop = document.getElementById("playHistoryBtnDesktop");
-  const resetBtnMobile = document.getElementById("resetHistoryBtnMobile");
-  const resetBtnDesktop = document.getElementById("resetHistoryBtnDesktop");
-  const playBtn = window.innerWidth <= 768 ? playBtnMobile : playBtnDesktop;
-  const resetBtn = window.innerWidth <= 768 ? resetBtnMobile : resetBtnDesktop;
+    function resetHistoryAnimation() {
+      const playBtnMobile = document.getElementById("playHistoryBtnMobile");
+      const playBtnDesktop = document.getElementById("playHistoryBtnDesktop");
+      const resetBtnMobile = document.getElementById("resetHistoryBtnMobile");
+      const resetBtnDesktop = document.getElementById("resetHistoryBtnDesktop");
+      const playBtn = window.innerWidth <= 768 ? playBtnMobile : playBtnDesktop;
+      const resetBtn = window.innerWidth <= 768 ? resetBtnMobile : resetBtnDesktop;
 
-  isPlaying = false;
-  clearInterval(animationInterval);
-  playBtn.textContent = "Play SSO History";
-  playBtn.classList.remove("playing");
-  resetBtn.style.display = "none"; // Hide reset button when resetting
-  document.getElementById("cumulativeChartContainer").style.display = "none";
-  resetMapToNormal();
-  animationIndex = 0;
-  currentAnimationDate = new Date("2019-01-01");
-}
+      isPlaying = false;
+      clearInterval(animationInterval);
+      playBtn.textContent = "Play SSO History";
+      playBtn.classList.remove("playing");
+      resetBtn.style.display = "none";
+      document.getElementById("cumulativeChartContainer").style.display = "none";
+      resetMapToNormal();
+      animationIndex = 0;
+      currentAnimationDate = selectedDateRange.start;
+    }
 
     function makeChartDraggable() {
       const chart = document.getElementById("cumulativeChartContainer");
@@ -1501,6 +1546,90 @@ function resetHistoryAnimation() {
       return dates;
     }
 
+function initializeDateSlider() {
+  const minDate = new Date("2019-01-01");
+  const maxDate = new Date("2025-03-16"); // Today
+  const defaultStart = new Date("2019-01-01");
+ const defaultEnd = new Date();
+
+  const slider = document.getElementById("dateSlider");
+  const track = document.getElementById("dateSliderTrack");
+  const minHandle = document.getElementById("dateSliderMin");
+  const maxHandle = document.getElementById("dateSliderMax");
+  const label = document.getElementById("dateRangeLabel");
+
+  const totalTime = maxDate - minDate;
+  const startPos = ((defaultStart - minDate) / totalTime) * 100;
+  const endPos = ((defaultEnd - minDate) / totalTime) * 100;
+
+  minHandle.style.left = `${startPos}%`;
+  maxHandle.style.left = `${endPos}%`;
+  track.style.left = `${startPos}%`;
+  track.style.width = `${endPos - startPos}%`;
+
+  label.textContent = `${formatMonthForDisplay(defaultStart)} - ${formatMonthForDisplay(defaultEnd)}`;
+  selectedDateRange = { start: defaultStart, end: defaultEnd };
+
+  let activeHandle = null;
+
+  function updateSliderPosition(handle, clientX) {
+    const rect = slider.getBoundingClientRect();
+    let percentage = (clientX - rect.left) / rect.width;
+    percentage = Math.max(0, Math.min(1, percentage));
+
+    if (handle === minHandle) {
+      const maxPos = parseFloat(maxHandle.style.left) / 100;
+      percentage = Math.min(percentage, maxPos - 0.01); // Prevent overlap
+      minHandle.style.left = `${percentage * 100}%`;
+      track.style.left = `${percentage * 100}%`;
+      track.style.width = `${(maxPos - percentage) * 100}%`;
+    } else {
+      const minPos = parseFloat(minHandle.style.left) / 100;
+      percentage = Math.max(percentage, minPos + 0.01); // Prevent overlap
+      maxHandle.style.left = `${percentage * 100}%`;
+      track.style.width = `${(percentage - minPos) * 100}%`;
+    }
+
+    const newStart = new Date(minDate.getTime() + (parseFloat(minHandle.style.left) / 100) * totalTime);
+    const newEnd = new Date(minDate.getTime() + (parseFloat(maxHandle.style.left) / 100) * totalTime);
+    selectedDateRange = { start: newStart, end: newEnd };
+    label.textContent = `${formatMonthForDisplay(newStart)} - ${formatMonthForDisplay(newEnd)}`;
+  }
+
+  function startDragging(e) {
+    activeHandle = e.target;
+    activeHandle.classList.add("active");
+    e.preventDefault();
+  }
+
+  function stopDragging() {
+    if (activeHandle) {
+      activeHandle.classList.remove("active");
+      updateChartWithCurrentPeriod();
+      updateMap();
+      if (isPlaying) resetHistoryAnimation(); // Reset animation if playing
+      activeHandle = null;
+    }
+  }
+
+  function moveHandle(e) {
+    if (activeHandle) {
+      updateSliderPosition(activeHandle, e.clientX);
+    }
+  }
+
+  minHandle.addEventListener("mousedown", startDragging);
+  maxHandle.addEventListener("mousedown", startDragging);
+  document.addEventListener("mousemove", moveHandle);
+  document.addEventListener("mouseup", stopDragging);
+
+  // Touch support for mobile
+  minHandle.addEventListener("touchstart", (e) => startDragging(e.touches[0]));
+  maxHandle.addEventListener("touchstart", (e) => startDragging(e.touches[0]));
+  document.addEventListener("touchmove", (e) => moveHandle(e.touches[0]));
+  document.addEventListener("touchend", stopDragging);
+}
+
     document.addEventListener("DOMContentLoaded", () => {
       toggleSidebar();
       showLoading();
@@ -1544,16 +1673,6 @@ function resetHistoryAnimation() {
                   ]
                 },
                 tooltip: { mode: "index", intersect: false, backgroundColor: 'rgba(10, 10, 30, 0.9)', titleFont: { family: 'Orbitron' }, bodyFont: { family: 'Orbitron' }, callbacks: { label: ctx => ctx.dataset.label === "Special Weather Events" ? `${ctx.raw.date} | ${ctx.raw.event}` : `${ctx.dataset.label}: ${ctx.raw.y}` } }
-              },
-              onClick: (event, elements, chart) => {
-                const xValue = chart.scales.x.getValueForPixel(event.x);
-                if (xValue) {
-                  selectedDate = new Date(xValue);
-                  const aggSSO = aggregateSSOData(rawSSOFeatures, currentPeriod);
-                  selectedDate = aggSSO.reduce((prev, curr) => Math.abs(curr.date - selectedDate) < Math.abs(prev.date - selectedDate) ? curr : prev).date;
-                  updateChartWithCurrentPeriod();
-                  updateMap();
-                }
               }
             }
           });
@@ -1566,6 +1685,7 @@ function resetHistoryAnimation() {
             if (isPlaying) resetHistoryAnimation();
           });
 
+          initializeDateSlider();
           return initializeMap();
         })
         .then(() => {
@@ -1575,21 +1695,22 @@ function resetHistoryAnimation() {
           document.getElementById("monthlyBtn").addEventListener("click", () => { currentPeriod = 'monthly'; updateChartWithCurrentPeriod(); updateMap(); });
           document.getElementById("yearlyBtn").addEventListener("click", () => { currentPeriod = 'yearly'; updateChartWithCurrentPeriod(); updateMap(); });
           document.getElementById("resetZoomBtn").addEventListener("click", () => {
-            if (myChart) { myChart.resetZoom(); selectedDate = null; updateChartWithCurrentPeriod(); }
+            if (myChart) myChart.resetZoom();
             if (mapView) mapView.goTo({ center: [-95.3632715, 29.7632836], zoom: 10 });
             updateMap();
           });
           document.getElementById("showEventsBtn").addEventListener("click", showEventsDialog);
           document.getElementById("closeEventsDialog").addEventListener("click", closeEventsDialog);
-          document.getElementById("downloadBtn").addEventListener("click", downloadChartData);
-document.getElementById("playHistoryBtnMobile").addEventListener("click", toggleHistoryAnimation);
-document.getElementById("playHistoryBtnDesktop").addEventListener("click", toggleHistoryAnimation);
-document.getElementById("resetHistoryBtnMobile").addEventListener("click", resetHistoryAnimation);
-document.getElementById("resetHistoryBtnDesktop").addEventListener("click", resetHistoryAnimation);
-document.getElementById("playHistoryBtnMobile").style.display = mapVisible ? "block" : "none";
-document.getElementById("playHistoryBtnDesktop").style.display = mapVisible ? "block" : "none";
-document.getElementById("resetHistoryBtnMobile").style.display = "none"; // Initially hidden
-document.getElementById("resetHistoryBtnDesktop").style.display = "none"; // Initially hidden
+          document.getElementById("playHistoryBtnMobile").addEventListener("click", toggleHistoryAnimation);
+          document.getElementById("playHistoryBtnDesktop").addEventListener("click", toggleHistoryAnimation);
+          document.getElementById("resetHistoryBtnMobile").addEventListener("click", resetHistoryAnimation);
+          document.getElementById("resetHistoryBtnDesktop").addEventListener("click", resetHistoryAnimation);
+          document.getElementById("downloadBtn").addEventListener("click", downloadChartData); // Download button event listener
+          document.getElementById("playHistoryBtnMobile").style.display = mapVisible ? "block" : "none";
+          document.getElementById("playHistoryBtnDesktop").style.display = mapVisible ? "block" : "none";
+          document.getElementById("resetHistoryBtnMobile").style.display = "none";
+          document.getElementById("resetHistoryBtnDesktop").style.display = "none";
+          document.getElementById("downloadBtn").style.display = "inline-flex"; // Explicitly ensure visibility
         })
         .catch(error => {
           console.error("Error initializing:", error);
