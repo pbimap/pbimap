@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>SSO 3D Force-Directed Graph by WWTP and Basin</title>
+  <style>
+    body { 
+      margin: 0; 
+      background: #101020; /* Dark sci-fi background */
+    }
+    #3d-graph { 
+      width: 100vw; 
+      height: 100vh; 
+    }
+  </style>
+  <!-- Load the 3d-force-graph library from CDN -->
+  <script src="https://unpkg.com/3d-force-graph@1.74.0/dist/3d-force-graph.min.js"></script>
+</head>
+<body>
+  <div id="3d-graph"></div>
+
+  <script>
+    const ssoApiUrl = 'https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/RSSO_Package/FeatureServer/0/query';
+
+    // Fetch SSO data from ArcGIS FeatureServer
+    function fetchSSOData(resultOffset = 0, accumulated = []) {
+      const queryParams = new URLSearchParams({
+        where: "System LIKE '%ublic%' AND STARTDATE >= date '2021-04-01'",
+        outFields: "*",
+        f: "json",
+        returnGeometry: true,
+        resultOffset: resultOffset,
+        resultRecordCount: 2000,
+        orderByFields: "STARTDATE ASC"
+      });
+      return fetch(ssoApiUrl + "?" + queryParams.toString())
+        .then(response => response.ok ? response.json() : Promise.reject("SSO data error: " + response.status))
+        .then(json => {
+          if (!json.features) return accumulated;
+          accumulated.push(...json.features);
+          if (json.exceededTransferLimit) return fetchSSOData(resultOffset + 2000, accumulated);
+          return accumulated;
+        });
+    }
+
+    // Simple hash function to generate a color from a string
+    function stringToColor(str) {
+      if (!str || str === 'Unknown') return '#00FFFF'; // Cyan for null/unknown
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      const c = (hash & 0x00FFFFFF).toString(16).toUpperCase();
+      return "#" + "00000".substring(0, 6 - c.length) + c;
+    }
+
+    // Transform ArcGIS data into hierarchical nodes and links
+    function transformSSOData(features) {
+      const nodes = [];
+      const links = [];
+
+      // Calculate total SSO count for COH
+      const totalSsoCount = features.length;
+
+      // Root node: COH
+      const cohId = 'COH';
+      const cohNode = {
+        id: cohId,
+        type: 'coh',
+        description: `City of Houston (COH) - Total SSOs: ${totalSsoCount}`,
+        count: 1,
+        fx: 0, // Fixed at center
+        fy: 0, // Fixed at center
+        fz: 0, // Fixed z-coordinate for 3D
+        childLinks: []
+      };
+      nodes.push(cohNode);
+
+      // Group by WWTP, then Basin, then Address
+      const wwtpGroups = {};
+      features.forEach(feature => {
+        const wwtp = feature.attributes.WWTP || 'Unknown';
+        const basin = feature.attributes.BASIN || 'Unknown';
+        const address = feature.attributes.ADDRESS || 'Unknown';
+
+        if (!wwtpGroups[wwtp]) wwtpGroups[wwtp] = {};
+        if (!wwtpGroups[wwtp][basin]) wwtpGroups[wwtp][basin] = {};
+        if (!wwtpGroups[wwtp][basin][address]) wwtpGroups[wwtp][basin][address] = [];
+        wwtpGroups[wwtp][basin][address].push(feature);
+      });
+
+      // Assign initial positions for WWTP nodes radially in 3D with greater separation
+      let wwtpAngle = 0;
+      const wwtpRadius = 300; // Larger radius for WWTP nodes
+      const wwtpList = Object.entries(wwtpGroups);
+      wwtpList.forEach(([wwtp, basinGroups], wwtpIndex) => {
+        const wwtpId = `wwtp_${wwtp}`;
+        const wwtpSsoCount = Object.values(basinGroups).reduce((sum, basins) => 
+          sum + Object.values(basins).reduce((s, events) => s + events.length, 0), 0);
+        const clusterColor = stringToColor(wwtp);
+        const wwtpNode = {
+          id: wwtpId,
+          type: 'wwtp',
+          wwtp: wwtp,
+          count: wwtpSsoCount,
+          description: `${wwtp} - Total SSOs: ${wwtpSsoCount}`,
+          x: Math.cos(wwtpAngle) * wwtpRadius,
+          y: Math.sin(wwtpAngle) * wwtpRadius,
+          z: 0, // Initial z-coordinate
+          color: clusterColor,
+          expansionLevel: 0,
+          childLinks: []
+        };
+        nodes.push(wwtpNode);
+        links.push({ source: cohId, target: wwtpId });
+        cohNode.childLinks.push({ source: cohId, target: wwtpId });
+        wwtpAngle += 2 * Math.PI / wwtpList.length;
+
+        // Assign initial positions for Basin nodes closely around WWTP in 3D
+        let basinAngle = 0;
+        const basinRadius = 40;
+        const basinList = Object.entries(basinGroups);
+        basinList.forEach(([basin, addressGroups], basinIndex) => {
+          const basinId = `basin_${wwtp}_${basin}`;
+          const basinSsoCount = Object.values(addressGroups).reduce((sum, events) => sum + events.length, 0);
+          const basinNode = {
+            id: basinId,
+            type: 'basin',
+            wwtp: wwtp,
+            basin: basin,
+            count: basinSsoCount,
+            description: `${basin} - Total SSOs: ${basinSsoCount}`,
+            x: wwtpNode.x + Math.cos(basinAngle) * basinRadius,
+            y: wwtpNode.y + Math.sin(basinAngle) * basinRadius,
+            z: wwtpNode.z + 20, // Slight z-offset for 3D effect
+            color: clusterColor,
+            expansionLevel: 0,
+            childLinks: []
+          };
+          nodes.push(basinNode);
+          links.push({ source: wwtpId, target: basinId });
+          wwtpNode.childLinks.push({ source: wwtpId, target: basinId });
+          basinAngle += 2 * Math.PI / (basinList.length || 1);
+
+          // Handle rSSO and SSO nodes with tight clustering in 3D
+          let offsetAngle = 0;
+          const addressRadius = 30;
+          const addressList = Object.entries(addressGroups);
+          addressList.forEach(([address, ssoEvents], addressIndex) => {
+            const ssoCount = ssoEvents.length;
+
+            if (ssoCount === 1) {
+              const feature = ssoEvents[0];
+              const ssoId = feature.attributes.OBJECTID || `${wwtp}_${basin}_${address}_0`;
+              const cause = feature.attributes.CAUSE || 'Unknown';
+              const ssoNode = {
+                id: ssoId,
+                type: 'sso',
+                wwtp: wwtp,
+                basin: basin,
+                address: address,
+                count: 1,
+                cause: cause,
+                color: stringToColor(cause),
+                description: `${address} - ${feature.attributes.System} - ${new Date(feature.attributes.STARTDATE).toLocaleDateString()} - Cause: ${cause}`,
+                x: basinNode.x + Math.cos(offsetAngle) * addressRadius,
+                y: basinNode.y + Math.sin(offsetAngle) * addressRadius,
+                z: basinNode.z + 10,
+              };
+              nodes.push(ssoNode);
+              links.push({ source: basinId, target: ssoId });
+              basinNode.childLinks.push({ source: basinId, target: ssoId });
+              offsetAngle += 2 * Math.PI / (addressList.length || 1);
+            } else {
+              const rSsoId = `rsso_${wwtp}_${basin}_${address}`;
+              const rSsoNode = {
+                id: rSsoId,
+                type: 'rsso',
+                wwtp: wwtp,
+                basin: basin,
+                address: address,
+                count: ssoCount,
+                description: `${address} (Repeat SSO Count: ${ssoCount})`,
+                x: basinNode.x + Math.cos(offsetAngle) * addressRadius,
+                y: basinNode.y + Math.sin(offsetAngle) * addressRadius,
+                z: basinNode.z + 15,
+                color: clusterColor,
+                expansionLevel: 0,
+                childLinks: []
+              };
+              nodes.push(rSsoNode);
+              links.push({ source: basinId, target: rSsoId });
+              basinNode.childLinks.push({ source: basinId, target: rSsoId });
+              offsetAngle += 2 * Math.PI / (addressList.length || 1);
+
+              let ssoAngle = 0;
+              const ssoRadius = 20;
+              ssoEvents.forEach((feature, index) => {
+                const ssoId = feature.attributes.OBJECTID || `${wwtp}_${basin}_${address}_${index}`;
+                const cause = feature.attributes.CAUSE || 'Unknown';
+                const ssoNode = {
+                  id: ssoId,
+                  type: 'sso',
+                  wwtp: wwtp,
+                  basin: basin,
+                  address: address,
+                  count: 1,
+                  cause: cause,
+                  color: stringToColor(cause),
+                  description: `${address} - ${feature.attributes.System} - ${new Date(feature.attributes.STARTDATE).toLocaleDateString()} - Cause: ${cause}`,
+                  x: rSsoNode.x + Math.cos(ssoAngle) * ssoRadius,
+                  y: rSsoNode.y + Math.sin(ssoAngle) * ssoRadius,
+                  z: rSsoNode.z + 5,
+                };
+                nodes.push(ssoNode);
+                links.push({ source: rSsoId, target: ssoId });
+                rSsoNode.childLinks.push({ source: rSsoId, target: ssoId });
+                ssoAngle += 2 * Math.PI / (ssoEvents.length || 1);
+              });
+            }
+          });
+        });
+      });
+
+      return { nodes, links };
+    }
+
+    // Function to get pruned tree data based on expansion levels
+    function getPrunedTree(fullData) {
+      const visibleNodes = [];
+      const visibleLinks = [];
+      const nodesById = Object.fromEntries(fullData.nodes.map(node => [node.id, node]));
+      const visited = new Set();
+
+      function traverseTree(node) {
+        if (!node || visited.has(node.id)) return;
+        visited.add(node.id);
+        visibleNodes.push(node);
+
+        if (node.type === 'coh') {
+          node.childLinks.forEach(link => {
+            const childNode = typeof link.target === 'object' ? link.target : nodesById[link.target];
+            if (childNode && !visited.has(childNode.id)) {
+              visibleLinks.push(fullData.links.find(l => l.source === link.source && l.target === link.target) || link);
+              traverseTree(childNode);
+            }
+          });
+        } else if (node.type === 'wwtp') {
+          if (node.expansionLevel >= 1) {
+            node.childLinks.forEach(link => {
+              const childNode = typeof link.target === 'object' ? link.target : nodesById[link.target];
+              if (childNode && childNode.type === 'basin' && !visited.has(childNode.id)) {
+                visibleLinks.push(fullData.links.find(l => l.source === link.source && l.target === link.target) || link);
+                traverseTree(childNode);
+              }
+            });
+          }
+        } else if (node.type === 'basin') {
+          if (node.expansionLevel >= 1) {
+            node.childLinks.forEach(link => {
+              const childNode = typeof link.target === 'object' ? link.target : nodesById[link.target];
+              if (childNode && (childNode.type === 'rsso' || childNode.type === 'sso') && !visited.has(childNode.id)) {
+                visibleLinks.push(fullData.links.find(l => l.source === link.source && l.target === link.target) || link);
+                traverseTree(childNode);
+              }
+            });
+          }
+        } else if (node.type === 'rsso') {
+          if (node.expansionLevel >= 1) {
+            node.childLinks.forEach(link => {
+              const childNode = typeof link.target === 'object' ? link.target : nodesById[link.target];
+              if (childNode && childNode.type === 'sso' && !visited.has(childNode.id)) {
+                visibleLinks.push(fullData.links.find(l => l.source === link.source && l.target === link.target) || link);
+                traverseTree(childNode);
+              }
+            });
+          }
+        }
+      }
+
+      traverseTree(nodesById['COH']);
+      return { nodes: visibleNodes, links: visibleLinks };
+    }
+
+    // Fetch data and render the 3D graph
+    fetchSSOData()
+      .then(features => {
+        const fullData = transformSSOData(features);
+
+        // Compute min and max counts for relative sizing within each category
+        const wwtpCounts = fullData.nodes.filter(n => n.type === 'wwtp').map(n => n.count);
+        const wwtpMinCount = Math.min(...wwtpCounts, 1);
+        const wwtpMaxCount = Math.max(...wwtpCounts, 1);
+
+        const basinCounts = fullData.nodes.filter(n => n.type === 'basin').map(n => n.count);
+        const basinMinCount = Math.min(...basinCounts, 1);
+        const basinMaxCount = Math.max(...basinCounts, 1);
+
+        const rssoCounts = fullData.nodes.filter(n => n.type === 'rsso').map(n => n.count);
+        const rssoMinCount = Math.min(...rssoCounts, 1);
+        const rssoMaxCount = Math.max(...rssoCounts, 1);
+
+        // Initialize the 3D force graph
+        const Graph = ForceGraph3D()(document.getElementById('3d-graph'))
+          .backgroundColor('#101020') // Dark sci-fi background
+          .nodeRelSize(5) // Base size multiplier
+          .nodeResolution(16) // Higher resolution for smoother spheres
+          .nodeLabel(node => node.description) // Tooltip for all nodes
+          .nodeColor(node => {
+            // Smooth color with slight highlight for depth
+            const baseColor = node.type === 'coh' ? '#FFD700' : node.color;
+            return baseColor; // Use base color for consistency
+          })
+          .nodeVal(node => {
+            let size;
+
+            // Define minimum sizes for each category (for counts 1 and 2)
+            const wwtpMinSize = 6;
+            const basinMinSize = 4;
+            const rssoMinSize = 3;
+
+            // Scaling factor for relative sizing
+            const wwtpScaleFactor = 1.5;
+            const basinScaleFactor = 1.2;
+            const rssoScaleFactor = 1.0;
+
+            // Relative scaling function based on count range
+            const getRelativeSize = (count, minCount, maxCount, minSize, scaleFactor) => {
+              if (count <= 2) return minSize;
+              if (maxCount === minCount) return minSize;
+              const range = maxCount - minCount;
+              const normalizedCount = (count - minCount) / range;
+              const scaledIncrease = normalizedCount * minSize * scaleFactor;
+              return minSize + scaledIncrease;
+            };
+
+            switch (node.type) {
+              case 'coh':
+                size = 15;
+                break;
+              case 'wwtp':
+                size = getRelativeSize(node.count, wwtpMinCount, wwtpMaxCount, wwtpMinSize, wwtpScaleFactor);
+                break;
+              case 'basin':
+                size = getRelativeSize(node.count, basinMinCount, basinMaxCount, basinMinSize, basinScaleFactor);
+                break;
+              case 'rsso':
+                size = getRelativeSize(node.count, rssoMinCount, rssoMaxCount, rssoMinSize, rssoScaleFactor);
+                break;
+              case 'sso':
+                size = 3;
+                break;
+              default:
+                size = 3;
+            }
+
+            return size; // Use nodeVal to control the size of the node
+          })
+          .nodeOpacity(0.8) // Translucent, glass-like effect
+          .linkColor(() => 'rgba(255,255,255,0.2)') // Faint white links
+          .linkWidth(1) // Thin links
+          .linkDirectionalParticles(1) // One particle per link
+          .linkDirectionalParticleWidth(2.5) // Particle width
+          .linkDirectionalParticleSpeed(0.008) // Particle speed
+          .linkDirectionalParticleColor(() => '#FF00FF') // Neon magenta particles
+          .onNodeHover(node => {
+            document.getElementById('3d-graph').style.cursor = node && (node.type === 'wwtp' || node.type === 'basin' || node.type === 'rsso') && node.childLinks.length ? 'pointer' : null;
+          })
+          .onNodeClick(node => {
+            if ((node.type === 'wwtp' || node.type === 'basin' || node.type === 'rsso') && node.childLinks.length) {
+              node.expansionLevel = node.expansionLevel === 1 ? 0 : 1;
+              Graph.graphData(getPrunedTree(fullData));
+            }
+          })
+          .cameraPosition({ x: 500, y: 500, z: 500 }, { x: 0, y: 0, z: 0 }, 1000) // Initial camera view
+          .graphData(getPrunedTree(fullData)); // Initial data
+      })
+      .catch(error => console.error('Error fetching SSO data:', error));
+  </script>
+</body>
+</html>
