@@ -1547,106 +1547,104 @@ function updateChart(aggDrought, aggSSO) {
       return dates;
     }
 
-    function initializeDateSlider() {
-      const minDate = new Date("2019-01-01");
-      // Determine the latest SSO date
-      const latestSSODate = rawSSOFeatures.length > 0 
-        ? new Date(Math.max(...rawSSOFeatures.map(f => new Date(f.attributes.STARTDATE))))
-        : new Date(); // Fallback to current date if no SSO data
-      latestSSODate.setDate(1); // Set to the first of the latest SSO month
-      const maxDate = latestSSODate;
-      const defaultStart = new Date("2019-01-01");
-      const defaultEnd = new Date(maxDate);
-    
-      const slider = document.getElementById("dateSlider");
-      const track = document.getElementById("dateSliderTrack");
-      const minHandle = document.getElementById("dateSliderMin");
-      const maxHandle = document.getElementById("dateSliderMax");
-      const label = document.getElementById("dateRangeLabel");
-    
-      const totalMonths = (maxDate.getFullYear() - minDate.getFullYear()) * 12 + (maxDate.getMonth() - minDate.getMonth());
-      const startMonths = 0; // Start at 0 months from minDate
-      const endMonths = (defaultEnd.getFullYear() - minDate.getFullYear()) * 12 + (defaultEnd.getMonth() - minDate.getMonth());
-    
-      const startPos = (startMonths / totalMonths) * 100;
-      const endPos = (endMonths / totalMonths) * 100;
-    
-      minHandle.style.left = `${startPos}%`;
-      maxHandle.style.left = `${endPos}%`;
-      track.style.left = `${startPos}%`;
-      track.style.width = `${endPos - startPos}%`;
-    
-      label.textContent = `${formatMonthForDisplay(defaultStart)} - ${formatMonthForDisplay(defaultEnd)}`;
-      selectedDateRange = { start: defaultStart, end: defaultEnd };
-    
-      let activeHandle = null;
-    
-      function updateSliderPosition(handle, clientX) {
-        const rect = slider.getBoundingClientRect();
-        let percentage = (clientX - rect.left) / rect.width;
-        percentage = Math.max(0, Math.min(1, percentage));
-    
-        let monthsFromStart;
-        let newDate;
-        if (handle === minHandle) {
-          const maxPos = parseFloat(maxHandle.style.left) / 100;
-          percentage = Math.min(percentage, maxPos); // Allow full range
-          minHandle.style.left = `${percentage * 100}%`;
-          track.style.left = `${percentage * 100}%`;
-          track.style.width = `${(maxPos - percentage) * 100}%`;
-          monthsFromStart = Math.floor(percentage * totalMonths); // Use floor to avoid rounding down to previous month
-          newDate = new Date(minDate.getFullYear(), minDate.getMonth() + monthsFromStart, 1);
-          // Ensure it doesn't go below minDate
-          if (newDate < minDate) newDate = new Date(minDate);
-          selectedDateRange.start = newDate;
-        } else {
-          const minPos = parseFloat(minHandle.style.left) / 100;
-          percentage = Math.max(percentage, minPos); // Allow full range
-          maxHandle.style.left = `${percentage * 100}%`;
-          track.style.width = `${(percentage - minPos) * 100}%`;
-          monthsFromStart = Math.floor(percentage * totalMonths); // Use floor to avoid rounding down to previous month
-          newDate = new Date(minDate.getFullYear(), minDate.getMonth() + monthsFromStart, 1);
-          // Ensure it doesn't exceed maxDate
-          if (newDate > maxDate) newDate = new Date(maxDate);
-          selectedDateRange.end = newDate;
-        }
-    
-        label.textContent = `${formatMonthForDisplay(selectedDateRange.start)} - ${formatMonthForDisplay(selectedDateRange.end)}`;
-      }
-    
-      function startDragging(e) {
-        activeHandle = e.target;
-        activeHandle.classList.add("active");
-        e.preventDefault();
-      }
-    
-      function stopDragging() {
-        if (activeHandle) {
-          activeHandle.classList.remove("active");
-          updateChartWithCurrentPeriod();
-          updateMap();
-          if (isPlaying) resetHistoryAnimation();
-          activeHandle = null;
-        }
-      }
-    
-      function moveHandle(e) {
-        if (activeHandle) {
-          updateSliderPosition(activeHandle, e.clientX);
-        }
-      }
-    
-      minHandle.addEventListener("mousedown", startDragging);
-      maxHandle.addEventListener("mousedown", startDragging);
-      document.addEventListener("mousemove", moveHandle);
-      document.addEventListener("mouseup", stopDragging);
-    
-      // Touch support for mobile
-      minHandle.addEventListener("touchstart", (e) => startDragging(e.touches[0]));
-      maxHandle.addEventListener("touchstart", (e) => startDragging(e.touches[0]));
-      document.addEventListener("touchmove", (e) => moveHandle(e.touches[0]));
-      document.addEventListener("touchend", stopDragging);
+function initializeDateSlider() {
+  const minDate = new Date("2019-01-01");
+  // Determine the latest SSO date
+  const latestSSODate = rawSSOFeatures.length > 0 
+    ? new Date(Math.max(...rawSSOFeatures.map(f => new Date(f.attributes.STARTDATE))))
+    : new Date(); // Fallback to current date if no SSO data
+  // Set maxDate to the end of the latest SSO month
+  const maxDate = new Date(latestSSODate.getFullYear(), latestSSODate.getMonth() + 1, 0); // Last day of the month
+  const defaultStart = new Date("2019-01-01");
+  const defaultEnd = new Date(maxDate);
+
+  const slider = document.getElementById("dateSlider");
+  const track = document.getElementById("dateSliderTrack");
+  const minHandle = document.getElementById("dateSliderMin");
+  const maxHandle = document.getElementById("dateSliderMax");
+  const label = document.getElementById("dateRangeLabel");
+
+  const totalMonths = (maxDate.getFullYear() - minDate.getFullYear()) * 12 + (maxDate.getMonth() - minDate.getMonth());
+  const startMonths = 0; // Start at 0 months from minDate
+  const endMonths = (defaultEnd.getFullYear() - minDate.getFullYear()) * 12 + (defaultEnd.getMonth() - minDate.getMonth());
+
+  const startPos = (startMonths / totalMonths) * 100;
+  const endPos = (endMonths / totalMonths) * 100;
+
+  minHandle.style.left = `${startPos}%`;
+  maxHandle.style.left = `${endPos}%`;
+  track.style.left = `${startPos}%`;
+  track.style.width = `${endPos - startPos}%`;
+
+  label.textContent = `${formatMonthForDisplay(defaultStart)} - ${formatMonthForDisplay(defaultEnd)}`;
+  selectedDateRange = { start: defaultStart, end: defaultEnd };
+
+  let activeHandle = null;
+
+  function updateSliderPosition(handle, clientX) {
+    const rect = slider.getBoundingClientRect();
+    let percentage = (clientX - rect.left) / rect.width;
+    percentage = Math.max(0, Math.min(1, percentage));
+
+    let monthsFromStart;
+    let newDate;
+    if (handle === minHandle) {
+      const maxPos = parseFloat(maxHandle.style.left) / 100;
+      percentage = Math.min(percentage, maxPos);
+      minHandle.style.left = `${percentage * 100}%`;
+      track.style.left = `${percentage * 100}%`;
+      track.style.width = `${(maxPos - percentage) * 100}%`;
+      monthsFromStart = Math.floor(percentage * totalMonths);
+      newDate = new Date(minDate.getFullYear(), minDate.getMonth() + monthsFromStart, 1);
+      if (newDate < minDate) newDate = new Date(minDate);
+      selectedDateRange.start = newDate;
+    } else {
+      const minPos = parseFloat(minHandle.style.left) / 100;
+      percentage = Math.max(percentage, minPos);
+      maxHandle.style.left = `${percentage * 100}%`;
+      track.style.width = `${(percentage - minPos) * 100}%`;
+      monthsFromStart = Math.floor(percentage * totalMonths);
+      newDate = new Date(minDate.getFullYear(), minDate.getMonth() + monthsFromStart + 1, 0); // Set to last day of the month
+      if (newDate > maxDate) newDate = new Date(maxDate);
+      selectedDateRange.end = newDate;
     }
+
+    label.textContent = `${formatMonthForDisplay(selectedDateRange.start)} - ${formatMonthForDisplay(selectedDateRange.end)}`;
+  }
+
+  function startDragging(e) {
+    activeHandle = e.target;
+    activeHandle.classList.add("active");
+    e.preventDefault();
+  }
+
+  function stopDragging() {
+    if (activeHandle) {
+      activeHandle.classList.remove("active");
+      updateChartWithCurrentPeriod();
+      updateMap();
+      if (isPlaying) resetHistoryAnimation();
+      activeHandle = null;
+    }
+  }
+
+  function moveHandle(e) {
+    if (activeHandle) {
+      updateSliderPosition(activeHandle, e.clientX);
+    }
+  }
+
+  minHandle.addEventListener("mousedown", startDragging);
+  maxHandle.addEventListener("mousedown", startDragging);
+  document.addEventListener("mousemove", moveHandle);
+  document.addEventListener("mouseup", stopDragging);
+
+  // Touch support for mobile
+  minHandle.addEventListener("touchstart", (e) => startDragging(e.touches[0]));
+  maxHandle.addEventListener("touchstart", (e) => startDragging(e.touches[0]));
+  document.addEventListener("touchmove", (e) => moveHandle(e.touches[0]));
+  document.addEventListener("touchend", stopDragging);
+}
 
     document.addEventListener("DOMContentLoaded", () => {
       toggleSidebar();
