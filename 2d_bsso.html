@@ -4,18 +4,369 @@
   <meta charset="utf-8">
   <title>SSO Force-Directed Graph by WWTP and Basin</title>
   <style>
-    body { 
-      margin: 0; 
-      background: #101020; /* Dark sci-fi background */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    #graph { 
-      width: 100vw; 
-      height: 100vh; 
+    body {
+      background: linear-gradient(145deg, #0d0d1a, #1a1a33);
+      color: #e0e0e0;
+      font-family: 'Orbitron', 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      background-image: radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
+    }
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      min-height: 100vh;
+      background: rgba(20, 20, 40, 0.8);
+      box-shadow: inset 0 0 20px rgba(0, 212, 255, 0.1);
+    }
+    .sidebar {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(180deg, rgba(20, 20, 40, 0.95), rgba(10, 10, 30, 0.95));
+      border-bottom: 1px solid rgba(0, 212, 255, 0.4);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+    }
+    .sidebar h3 {
+      font-size: 1rem;
+      margin: 0.5rem 0;
+      color: #00d4ff;
+      text-shadow: 0 0 6px #00d4ff;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .main-content {
+      flex: 1;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(180deg, rgba(20, 20, 40, 0.7), rgba(10, 10, 30, 0.7));
+      min-height: 0;
+      position: relative;
+    }
+    .content-wrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      flex-grow: 1;
+      min-height: 0;
+    }
+    .graph-container, .table-container {
+      width: 100%;
+      background: rgba(10, 10, 30, 0.9);
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2), inset 0 0 10px rgba(0, 212, 255, 0.1);
+      padding: 0.8rem;
+      overflow: hidden;
+      border: 1px solid rgba(0, 212, 255, 0.3);
+    }
+    .graph-container {
+      height: 100%;
+      position: relative;
+    }
+    .table-container {
+      max-height: 30vh;
+      overflow-y: auto;
+      margin-bottom: 1rem;
+    }
+    #graph {
+      width: 100% !important;
+      height: 100% !important;
+      border-radius: 4px;
+      box-shadow: inset 0 0 8px rgba(0, 212, 255, 0.2);
+    }
+    h1 {
+      font-size: 1.4rem;
+      color: #00d4ff;
+      text-shadow: 0 0 10px #00d4ff, 0 0 20px rgba(0, 212, 255, 0.5);
+      margin-bottom: 0.5rem;
+      text-align: center;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+    }
+    /* Overlay Styles */
+    .overlay {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background: rgba(10, 10, 30, 0.95);
+      border-radius: 8px;
+      padding: 0.8rem;
+      box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+      border: 1px solid rgba(0, 212, 255, 0.5);
+      z-index: 10;
+      font-size: 0.9rem;
+      color: #e0e0e0;
+      backdrop-filter: blur(5px);
+    }
+    .overlay div {
+      margin-bottom: 0.3rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .overlay span.label {
+      color: #00d4ff;
+      text-shadow: 0 0 4px #00d4ff;
+      font-weight: 600;
+    }
+    .overlay span.value {
+      color: #ffffff;
+    }
+    /* Date Range Slider Styles */
+    .date-slider-container {
+      width: 100%;
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      background: rgba(10, 10, 30, 0.9);
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2), inset 0 0 10px rgba(0, 212, 255, 0.1);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      position: relative;
+    }
+    .date-inputs {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    .date-inputs input {
+      width: 45%;
+      padding: 0.4rem;
+      background: linear-gradient(135deg, #1a1a33, #0d0d1a);
+      border: 1px solid #00d4ff;
+      border-radius: 4px;
+      color: #e0e0e0;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      box-shadow: 0 0 4px rgba(0, 212, 255, 0.3);
+      transition: all 0.2s ease;
+    }
+    .date-inputs input:focus {
+      outline: none;
+      box-shadow: 0 0 8px rgba(0, 212, 255, 0.6);
+      border-color: #00eaff;
+    }
+    .date-slider {
+      position: relative;
+      height: 8px;
+      background: linear-gradient(90deg, #1a1a33, #0d0d1a);
+      border-radius: 4px;
+      box-shadow: inset 0 0 5px rgba(0, 212, 255, 0.3);
+    }
+    .date-slider-track {
+      position: absolute;
+      height: 100%;
+      background: linear-gradient(90deg, #00d4ff, #007bff);
+      box-shadow: 0 0 8px rgba(0, 212, 255, 0.6);
+      border-radius: 4px;
+    }
+    .date-slider-handle {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: linear-gradient(45deg, #00d4ff, #007bff);
+      border: 2px solid #fff;
+      border-radius: 50%;
+      top: -4px;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(0, 212, 255, 0.8);
+      transition: transform 0.2s ease;
+      transform: translateX(-50%);
+    }
+    .date-slider-handle:hover,
+    .date-slider-handle.active {
+      transform: scale(1.2) translateX(-50%);
+      background: linear-gradient(45deg, #00eaff, #008cff);
+    }
+    #dateRangeLabel {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #00d4ff;
+      text-shadow: 0 0 6px #00d4ff;
+      margin-top: 0.5rem;
+      font-family: 'Orbitron', sans-serif;
+    }
+    /* Table Styles */
+    .table-wrapper {
+      overflow-x: auto;
+      width: 100%;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      color: #e0e0e0;
+      font-size: 0.85rem;
+    }
+    #ssoTable {
+      min-width: 900px; /* Ensure horizontal scrollbar for Filtered SSO Events */
+    }
+    .stats-table {
+      min-width: 400px; /* Ensure horizontal scrollbar for SSO Statistics */
+    }
+    th, td {
+      padding: 0.6rem 0.8rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+      white-space: nowrap;
+    }
+    th {
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(0, 123, 255, 0.2));
+      color: #00d4ff;
+      text-shadow: 0 0 6px #00d4ff;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid #00d4ff;
+    }
+    td {
+      background: rgba(20, 20, 40, 0.9);
+      transition: background 0.2s ease;
+    }
+    tr:hover td {
+      background: rgba(0, 212, 255, 0.15);
+    }
+    .stats-table th, .stats-table td {
+      text-align: center;
+    }
+    /* Scrollbar Styling */
+    .table-wrapper::-webkit-scrollbar,
+    .table-container::-webkit-scrollbar {
+      height: 8px;
+      width: 8px;
+    }
+    .table-wrapper::-webkit-scrollbar-track,
+    .table-container::-webkit-scrollbar-track {
+      background: #1a1a33;
+      border-radius: 4px;
+    }
+    .table-wrapper::-webkit-scrollbar-thumb,
+    .table-container::-webkit-scrollbar-thumb {
+      background: #00d4ff;
+      border-radius: 4px;
+      box-shadow: 0 0 6px rgba(0, 212, 255, 0.5);
+    }
+    .table-wrapper::-webkit-scrollbar-thumb:hover,
+    .table-container::-webkit-scrollbar-thumb:hover {
+      background: #00eaff;
+    }
+    @media (min-width: 769px) {
+      .container {
+        flex-direction: row;
+      }
+      .sidebar {
+        width: 700px; /* Widened to 2x (previously 350px) */
+        height: 100vh;
+        border-bottom: none;
+        border-right: 1px solid rgba(0, 212, 255, 0.4);
+        position: fixed;
+        top: 0;
+        left: 0;
+        overflow-y: auto;
+        background: linear-gradient(180deg, rgba(20, 20, 40, 0.98), rgba(10, 10, 30, 0.98));
+        box-shadow: 2px 0 15px rgba(0, 0, 0, 0.6);
+      }
+      .main-content {
+        margin-left: 700px; /* Adjusted for wider sidebar */
+        height: 100vh;
+        padding: 1rem;
+      }
+      .content-wrapper {
+        flex-direction: column;
+        height: calc(100% - 5rem);
+        margin: 0;
+      }
+      .graph-container {
+        flex: 1;
+        height: 100%;
+        max-height: 100%;
+      }
+      .table-container {
+        max-height: 25vh;
+      }
     }
   </style>
 </head>
 <body>
-  <div id="graph"></div>
+  <div class="container">
+    <div class="sidebar">
+      <h3>Filter by Start Date</h3>
+      <div class="date-slider-container">
+        <div class="date-inputs">
+          <input type="date" id="startDateInput" />
+          <input type="date" id="endDateInput" />
+        </div>
+        <div class="date-slider" id="dateSlider">
+          <div class="date-slider-track" id="dateSliderTrack"></div>
+          <div class="date-slider-handle" id="dateSliderMin"></div>
+          <div class="date-slider-handle" id="dateSliderMax"></div>
+        </div>
+        <div id="dateRangeLabel"></div>
+      </div>
+      <div class="table-container">
+        <h3>Filtered SSO Events</h3>
+        <div class="table-wrapper">
+          <table id="ssoTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>WWTP</th>
+                <th>Basin</th>
+                <th>Address</th>
+                <th>Cause</th>
+                <th>Structure Type</th>
+                <th>System</th>
+                <th>Volume (gal)</th>
+                <th>Duration (hrs)</th>
+                <th>Weather</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="table-container">
+        <h3>SSO Statistics</h3>
+        <div class="table-wrapper">
+          <table class="stats-table" id="statsTable">
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="main-content">
+      <h1>SSO Force-Directed Graph by WWTP and Basin</h1>
+      <div class="content-wrapper">
+        <div class="graph-container">
+          <div class="overlay" id="statsOverlay">
+            <div><span class="label">Total SSOs:</span><span class="value" id="totalSSOs">0</span></div>
+            <div><span class="label">Total Mains:</span><span class="value" id="totalMains">0</span></div>
+            <div><span class="label">Total Laterals:</span><span class="value" id="totalLaterals">0</span></div>
+          </div>
+          <div id="graph"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Load D3.js explicitly before force-graph -->
   <script src="https://d3js.org/d3.v5.min.js"></script>
@@ -24,8 +375,13 @@
 
   <script>
     const ssoApiUrl = 'https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/RSSO_Package/FeatureServer/0/query';
+    let Graph;
+    let fullData;
+    let allFeatures = [];
+    let filteredFeatures = [];
+    const sewerMainTypes = ["Manhole", "Lift Station", "Gravity Main", "Force Main", "Treatment Plant"];
+    let minDate, maxDate, totalDays, selectedDateRange;
 
-    // Fetch SSO data from ArcGIS FeatureServer
     function fetchSSOData(resultOffset = 0, accumulated = []) {
       const queryParams = new URLSearchParams({
         where: "System LIKE '%ublic%' AND STARTDATE >= date '2021-04-01'",
@@ -46,9 +402,8 @@
         });
     }
 
-    // Simple hash function to generate a color from a string
     function stringToColor(str) {
-      if (!str || str === 'Unknown') return '#00FFFF'; // Cyan for null/unknown
+      if (!str || str === 'Unknown') return '#00FFFF';
       let hash = 0;
       for (let i = 0; i < str.length; i++) {
         hash = str.charCodeAt(i) + ((hash << 5) - hash);
@@ -57,61 +412,53 @@
       return "#" + "00000".substring(0, 6 - c.length) + c;
     }
 
-    // Transform ArcGIS data into hierarchical nodes and links
     function transformSSOData(features) {
       const nodes = [];
       const links = [];
-
-      // Calculate total SSO count for COH
       const totalSsoCount = features.length;
-
-      // Root node: COH
       const cohId = 'COH';
       const cohNode = {
         id: cohId,
         type: 'coh',
         description: `City of Houston (COH) - Total SSOs: ${totalSsoCount}`,
         count: 1,
-        fx: 0, // Fixed at center
-        fy: 0, // Fixed at center
+        fx: 0,
+        fy: 0,
         x: 0,
         y: 0,
         childLinks: []
       };
       nodes.push(cohNode);
 
-      // Group by WWTP, then Basin, then Address
       const wwtpGroups = {};
       features.forEach(feature => {
         const wwtp = feature.attributes.WWTP || 'Unknown';
         const basin = feature.attributes.BASIN || 'Unknown';
         const address = feature.attributes.ADDRESS || 'Unknown';
-
         if (!wwtpGroups[wwtp]) wwtpGroups[wwtp] = {};
         if (!wwtpGroups[wwtp][basin]) wwtpGroups[wwtp][basin] = {};
         if (!wwtpGroups[wwtp][basin][address]) wwtpGroups[wwtp][basin][address] = [];
         wwtpGroups[wwtp][basin][address].push(feature);
       });
 
-      // Assign initial positions for WWTP nodes radially with greater separation
       let wwtpAngle = 0;
-      const wwtpRadius = 300; // Larger radius for WWTP nodes to ensure separation
+      const wwtpRadius = 300;
       const wwtpList = Object.entries(wwtpGroups);
       wwtpList.forEach(([wwtp, basinGroups], wwtpIndex) => {
         const wwtpId = `wwtp_${wwtp}`;
         const wwtpSsoCount = Object.values(basinGroups).reduce((sum, basins) => 
           sum + Object.values(basins).reduce((s, events) => s + events.length, 0), 0);
-        const clusterColor = stringToColor(wwtp); // Unique color for WWTP (for clustering)
+        const clusterColor = stringToColor(wwtp);
         const wwtpNode = {
           id: wwtpId,
           type: 'wwtp',
           wwtp: wwtp,
           count: wwtpSsoCount,
           description: `${wwtp} - Total SSOs: ${wwtpSsoCount}`,
-          x: Math.cos(wwtpAngle) * wwtpRadius, // Initial position
+          x: Math.cos(wwtpAngle) * wwtpRadius,
           y: Math.sin(wwtpAngle) * wwtpRadius,
           color: clusterColor,
-          expansionLevel: 0, // 0: collapsed, 1: basins expanded
+          expansionLevel: 0,
           childLinks: []
         };
         nodes.push(wwtpNode);
@@ -119,9 +466,8 @@
         cohNode.childLinks.push({ source: cohId, target: wwtpId });
         wwtpAngle += 2 * Math.PI / wwtpList.length;
 
-        // Assign initial positions for Basin nodes closely around WWTP
         let basinAngle = 0;
-        const basinRadius = 20; // Reduced from 40 for tighter clustering
+        const basinRadius = 20;
         const basinList = Object.entries(basinGroups);
         basinList.forEach(([basin, addressGroups], basinIndex) => {
           const basinId = `basin_${wwtp}_${basin}`;
@@ -133,10 +479,10 @@
             basin: basin,
             count: basinSsoCount,
             description: `${basin} - Total SSOs: ${basinSsoCount}`,
-            x: wwtpNode.x + Math.cos(basinAngle) * basinRadius, // Tight clustering around WWTP
+            x: wwtpNode.x + Math.cos(basinAngle) * basinRadius,
             y: wwtpNode.y + Math.sin(basinAngle) * basinRadius,
             color: clusterColor,
-            expansionLevel: 0, // 0: collapsed, 1: rSSO/SSO expanded
+            expansionLevel: 0,
             childLinks: []
           };
           nodes.push(basinNode);
@@ -144,15 +490,12 @@
           wwtpNode.childLinks.push({ source: wwtpId, target: basinId });
           basinAngle += 2 * Math.PI / (basinList.length || 1);
 
-          // Handle rSSO and SSO nodes with tight clustering
           let offsetAngle = 0;
-          const addressRadius = 15; // Reduced from 30 for tighter clustering
+          const addressRadius = 15;
           const addressList = Object.entries(addressGroups);
           addressList.forEach(([address, ssoEvents], addressIndex) => {
             const ssoCount = ssoEvents.length;
-
             if (ssoCount === 1) {
-              // Single SSO event: Treat as an SSO node directly
               const feature = ssoEvents[0];
               const ssoId = feature.attributes.OBJECTID || `${wwtp}_${basin}_${address}_0`;
               const cause = feature.attributes.CAUSE || 'Unknown';
@@ -164,9 +507,9 @@
                 address: address,
                 count: 1,
                 cause: cause,
-                color: stringToColor(cause), // Color based on SSO cause
+                color: stringToColor(cause),
                 description: `${address} - ${feature.attributes.SYSTEM} - ${new Date(feature.attributes.STARTDATE).toLocaleDateString()} - Cause: ${cause}`,
-                x: basinNode.x + Math.cos(offsetAngle) * addressRadius, // Tight clustering around basin
+                x: basinNode.x + Math.cos(offsetAngle) * addressRadius,
                 y: basinNode.y + Math.sin(offsetAngle) * addressRadius
               };
               nodes.push(ssoNode);
@@ -174,7 +517,6 @@
               basinNode.childLinks.push({ source: basinId, target: ssoId });
               offsetAngle += 2 * Math.PI / (addressList.length || 1);
             } else {
-              // Multiple SSO events: Create rSSO node with SSO subnodes
               const rSsoId = `rsso_${wwtp}_${basin}_${address}`;
               const rSsoNode = {
                 id: rSsoId,
@@ -184,10 +526,10 @@
                 address: address,
                 count: ssoCount,
                 description: `${address} (Repeat SSO Count: ${ssoCount})`,
-                x: basinNode.x + Math.cos(offsetAngle) * addressRadius, // Tight clustering around basin
+                x: basinNode.x + Math.cos(offsetAngle) * addressRadius,
                 y: basinNode.y + Math.sin(offsetAngle) * addressRadius,
                 color: clusterColor,
-                expansionLevel: 0, // 0: collapsed, 1: SSO expanded
+                expansionLevel: 0,
                 childLinks: []
               };
               nodes.push(rSsoNode);
@@ -195,9 +537,8 @@
               basinNode.childLinks.push({ source: basinId, target: rSsoId });
               offsetAngle += 2 * Math.PI / (addressList.length || 1);
 
-              // Create SSO subnodes for rSSO with tight clustering
               let ssoAngle = 0;
-              const ssoRadius = 10; // Reduced from 20 for tighter clustering
+              const ssoRadius = 10;
               ssoEvents.forEach((feature, index) => {
                 const ssoId = feature.attributes.OBJECTID || `${wwtp}_${basin}_${address}_${index}`;
                 const cause = feature.attributes.CAUSE || 'Unknown';
@@ -209,9 +550,9 @@
                   address: address,
                   count: 1,
                   cause: cause,
-                  color: stringToColor(cause), // Color based on SSO cause
+                  color: stringToColor(cause),
                   description: `${address} - ${feature.attributes.SYSTEM} - ${new Date(feature.attributes.STARTDATE).toLocaleDateString()} - Cause: ${cause}`,
-                  x: rSsoNode.x + Math.cos(ssoAngle) * ssoRadius, // Tight clustering around rSSO
+                  x: rSsoNode.x + Math.cos(ssoAngle) * ssoRadius,
                   y: rSsoNode.y + Math.sin(ssoAngle) * ssoRadius
                 };
                 nodes.push(ssoNode);
@@ -227,12 +568,11 @@
       return { nodes, links };
     }
 
-    // Function to get pruned tree data based on expansion levels
     function getPrunedTree(fullData) {
       const visibleNodes = [];
       const visibleLinks = [];
       const nodesById = Object.fromEntries(fullData.nodes.map(node => [node.id, node]));
-      const visited = new Set(); // Track visited nodes to prevent infinite loops
+      const visited = new Set();
 
       function traverseTree(node) {
         if (!node || visited.has(node.id)) return;
@@ -240,7 +580,6 @@
         visibleNodes.push(node);
 
         if (node.type === 'coh') {
-          // COH always shows WWTP nodes
           node.childLinks.forEach(link => {
             const childNode = typeof link.target === 'object' ? link.target : nodesById[link.target];
             if (childNode && !visited.has(childNode.id)) {
@@ -249,7 +588,6 @@
             }
           });
         } else if (node.type === 'wwtp') {
-          // WWTP shows Basins if expansionLevel is 1
           if (node.expansionLevel >= 1) {
             node.childLinks.forEach(link => {
               const childNode = typeof link.target === 'object' ? link.target : nodesById[link.target];
@@ -260,7 +598,6 @@
             });
           }
         } else if (node.type === 'basin') {
-          // Basin shows rSSO/SSO if expansionLevel is 1
           if (node.expansionLevel >= 1) {
             node.childLinks.forEach(link => {
               const childNode = typeof link.target === 'object' ? link.target : nodesById[link.target];
@@ -271,7 +608,6 @@
             });
           }
         } else if (node.type === 'rsso') {
-          // rSSO shows SSO if expansionLevel is 1
           if (node.expansionLevel >= 1) {
             node.childLinks.forEach(link => {
               const childNode = typeof link.target === 'object' ? link.target : nodesById[link.target];
@@ -288,126 +624,358 @@
       return { nodes: visibleNodes, links: visibleLinks };
     }
 
-    // Fetch data and render the graph
+    function initializeGraph() {
+      Graph = ForceGraph()(document.getElementById('graph'))
+        .backgroundColor('#101020')
+        .nodeRelSize(5)
+        .nodeLabel('description')
+        .nodeCanvasObject((node, ctx, globalScale) => {
+          let size;
+          const wwtpMinSize = 5;
+          const basinMinSize = 3;
+          const rssoMinSize = 2;
+          const wwtpScaleFactor = 1.2;
+          const basinScaleFactor = 1.0;
+          const rssoScaleFactor = 0.8;
+
+          const getRelativeSize = (count, minCount, maxCount, minSize, scaleFactor) => {
+            if (count <= 2) return minSize;
+            if (maxCount === minCount) return minSize;
+            const range = maxCount - minCount;
+            const normalizedCount = (count - minCount) / range;
+            const scaledIncrease = normalizedCount * minSize * scaleFactor;
+            return minSize + scaledIncrease;
+          };
+
+          const wwtpCounts = fullData.nodes.filter(n => n.type === 'wwtp').map(n => n.count);
+          const wwtpMinCount = Math.min(...wwtpCounts, 1);
+          const wwtpMaxCount = Math.max(...wwtpCounts, 1);
+
+          const basinCounts = fullData.nodes.filter(n => n.type === 'basin').map(n => n.count);
+          const basinMinCount = Math.min(...basinCounts, 1);
+          const basinMaxCount = Math.max(...basinCounts, 1);
+
+          const rssoCounts = fullData.nodes.filter(n => n.type === 'rsso').map(n => n.count);
+          const rssoMinCount = Math.min(...rssoCounts, 1);
+          const rssoMaxCount = Math.max(...rssoCounts, 1);
+
+          switch (node.type) {
+            case 'coh':
+              size = 12;
+              break;
+            case 'wwtp':
+              size = getRelativeSize(node.count, wwtpMinCount, wwtpMaxCount, wwtpMinSize, wwtpScaleFactor);
+              break;
+            case 'basin':
+              size = getRelativeSize(node.count, basinMinCount, basinMaxCount, basinMinSize, basinScaleFactor);
+              break;
+            case 'rsso':
+              size = getRelativeSize(node.count, rssoMinCount, rssoMaxCount, rssoMinSize, rssoScaleFactor);
+              break;
+            case 'sso':
+              size = 3;
+              break;
+            default:
+              size = 3;
+          }
+
+          const nodeColor = node.type === 'coh' ? '#FFD700' : (node.type === 'sso' ? node.color : node.color);
+          const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, size / 2);
+          gradient.addColorStop(0, nodeColor);
+          gradient.addColorStop(1, nodeColor + '80');
+
+          ctx.shadowColor = nodeColor;
+          ctx.shadowBlur = size * 0.3;
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, size / 2, 0, 2 * Math.PI, false);
+          ctx.fillStyle = gradient;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        })
+        .linkColor(() => '#00FFFF80')
+        .linkWidth(1)
+        .linkDirectionalParticles(1)
+        .linkDirectionalParticleWidth(2)
+        .linkDirectionalParticleSpeed(0.006)
+        .linkDirectionalParticleColor(() => '#FF00FF')
+        .onNodeHover(node => document.getElementById('graph').style.cursor = node && (node.type === 'wwtp' || node.type === 'basin' || node.type === 'rsso') && node.childLinks.length ? 'pointer' : null)
+        .onNodeClick(node => {
+          if ((node.type === 'wwtp' || node.type === 'basin' || node.type === 'rsso') && node.childLinks.length) {
+            node.expansionLevel = node.expansionLevel === 1 ? 0 : 1;
+            Graph.graphData(getPrunedTree(fullData));
+            Graph.d3ReheatSimulation();
+          }
+        })
+        .d3Force('link', d3.forceLink().id(d => d.id).distance(link => {
+          const sourceType = link.source.type;
+          const targetType = link.target.type;
+          if (sourceType === 'basin' && (targetType === 'rsso' || targetType === 'sso')) return 15;
+          else if (sourceType === 'rsso' && targetType === 'sso') return 10;
+          else if (sourceType === 'wwtp' && targetType === 'basin') return 20;
+          return 50;
+        }).strength(0.7))
+        .d3Force('charge', d3.forceManyBody().strength(node => {
+          if (node.type === 'basin' || node.type === 'rsso' || node.type === 'sso') return -10;
+          return -30;
+        }))
+        .d3AlphaDecay(0.05);
+    }
+
+    function normalizeCause(cause) {
+      return cause ? cause.toLowerCase().replace(/–/g, "-").replace(/\s+/g, " ").trim() : "Unknown";
+    }
+
+    function groupCauses(causes) {
+      const grouped = { "Grease": [], "Rags/Wipes": [], "Roots": [], "Structural Issues": [], "Blockages": [],
+        "Wet Weather": [], "Lift Station/Treatment Plant/Power": [], "Cross Connections": [], "Other": [], "Unknown": [] };
+      causes.forEach(cause => {
+        const normalized = normalizeCause(cause);
+        const original = cause || "Unknown";
+        if (normalized.includes("grease blockage")) grouped["Grease"].push(original);
+        else if (normalized.includes("rags/wipes")) grouped["Rags/Wipes"].push(original);
+        else if (normalized.includes("roots")) grouped["Roots"].push(original);
+        else if (normalized.includes("pump/lift station") || normalized.includes("wwtp") || normalized.includes("power outage")) grouped["Lift Station/Treatment Plant/Power"].push(original);
+        else if (normalized.includes("structural failure") || normalized.includes("structural blockage")) grouped["Structural Issues"].push(original);
+        else if (normalized.includes("temporary blockage")) grouped["Blockages"].push(original);
+        else if (normalized.includes("wet weather")) grouped["Wet Weather"].push(original);
+        else if (normalized.includes("cross connection") || normalized.includes("cross-connection")) grouped["Cross Connections"].push(original);
+        else if (normalized === "unknown") grouped["Unknown"].push(original);
+        else grouped["Other"].push(original);
+      });
+      for (const group in grouped) grouped[group].sort();
+      return grouped;
+    }
+
+    function formatDateForInput(date) {
+      return date.toISOString().split('T')[0];
+    }
+
+    function updateSSOTable(features) {
+      const tbody = document.querySelector("#ssoTable tbody");
+      tbody.innerHTML = "";
+      features.forEach(feature => {
+        const row = document.createElement("tr");
+        const structureType = feature.attributes.STRUCTURETYPE && sewerMainTypes.includes(feature.attributes.STRUCTURETYPE) ? "Main" : "Service Lateral";
+        const duration = feature.attributes.DURATIONHOUR || 'N/A';
+        const volume = feature.attributes.VOLUMEGAL || 'N/A';
+        const weather = feature.attributes.WEATHER || 'N/A';
+        row.innerHTML = `
+          <td>${new Date(feature.attributes.STARTDATE).toLocaleDateString()}</td>
+          <td>${feature.attributes.WWTP || 'Unknown'}</td>
+          <td>${feature.attributes.BASIN || 'Unknown'}</td>
+          <td>${feature.attributes.ADDRESS || 'Unknown'}</td>
+          <td>${feature.attributes.CAUSE || 'Unknown'}</td>
+          <td>${structureType}</td>
+          <td>${feature.attributes.SYSTEM || 'Unknown'}</td>
+          <td>${volume}</td>
+          <td>${duration}</td>
+          <td>${weather}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function updateStatsTable(features) {
+      const tbody = document.querySelector("#statsTable tbody");
+      tbody.innerHTML = "";
+
+      // Total SSOs
+      const totalSSOs = features.length;
+      tbody.innerHTML += `<tr><td>Total SSOs</td><td>${totalSSOs}</td></tr>`;
+
+      // Repeat SSOs (rSSO count)
+      const wwtpGroups = {};
+      features.forEach(feature => {
+        const wwtp = feature.attributes.WWTP || 'Unknown';
+        const basin = feature.attributes.BASIN || 'Unknown';
+        const address = feature.attributes.ADDRESS || 'Unknown';
+        if (!wwtpGroups[wwtp]) wwtpGroups[wwtp] = {};
+        if (!wwtpGroups[wwtp][basin]) wwtpGroups[wwtp][basin] = {};
+        if (!wwtpGroups[wwtp][basin][address]) wwtpGroups[wwtp][basin][address] = [];
+        wwtpGroups[wwtp][basin][address].push(feature);
+      });
+      let repeatSSOCount = 0;
+      Object.values(wwtpGroups).forEach(basinGroups => {
+        Object.values(basinGroups).forEach(addressGroups => {
+          Object.entries(addressGroups).forEach(([address, events]) => {
+            if (events.length > 1) repeatSSOCount++;
+          });
+        });
+      });
+      tbody.innerHTML += `<tr><td>Repeat SSO Locations (rSSO)</td><td>${repeatSSOCount}</td></tr>`;
+
+      // Main vs Lateral Breakdown
+      const mainCount = features.filter(f => sewerMainTypes.includes(f.attributes.STRUCTURETYPE)).length;
+      const lateralCount = features.length - mainCount;
+      tbody.innerHTML += `<tr><td>Main SSOs</td><td>${mainCount}</td></tr>`;
+      tbody.innerHTML += `<tr><td>Lateral SSOs</td><td>${lateralCount}</td></tr>`;
+
+      // Update Overlay
+      document.getElementById('totalSSOs').textContent = totalSSOs;
+      document.getElementById('totalMains').textContent = mainCount;
+      document.getElementById('totalLaterals').textContent = lateralCount;
+
+      // Cause Breakdown
+      const causeCounts = {};
+      features.forEach(f => {
+        const cause = f.attributes.CAUSE || 'Unknown';
+        causeCounts[cause] = (causeCounts[cause] || 0) + 1;
+      });
+      const groupedCauses = groupCauses(Object.keys(causeCounts));
+      Object.entries(groupedCauses).forEach(([group, causesInGroup]) => {
+        const count = causesInGroup.reduce((sum, cause) => sum + (causeCounts[cause] || 0), 0);
+        if (count > 0) {
+          tbody.innerHTML += `<tr><td>${group}</td><td>${count}</td></tr>`;
+        }
+      });
+    }
+
+    function initializeDateSlider(features) {
+      const dates = features.map(f => new Date(f.attributes.STARTDATE)).filter(d => !isNaN(d));
+      minDate = new Date(Math.min(...dates));
+      maxDate = new Date(Math.max(...dates, Date.now()));
+      totalDays = (maxDate - minDate) / (1000 * 60 * 60 * 24);
+      selectedDateRange = { start: new Date(minDate), end: new Date(maxDate) };
+
+      const slider = document.getElementById("dateSlider");
+      const track = document.getElementById("dateSliderTrack");
+      const minHandle = document.getElementById("dateSliderMin");
+      const maxHandle = document.getElementById("dateSliderMax");
+      const label = document.getElementById("dateRangeLabel");
+      const startInput = document.getElementById("startDateInput");
+      const endInput = document.getElementById("endDateInput");
+
+      const startDays = 0;
+      const endDays = totalDays;
+      const startPos = (startDays / totalDays) * 100;
+      const endPos = (endDays / totalDays) * 100;
+
+      minHandle.style.left = `${startPos}%`;
+      maxHandle.style.left = `${endPos}%`;
+      track.style.left = `${startPos}%`;
+      track.style.width = `${endPos - startPos}%`;
+
+      startInput.value = formatDateForInput(minDate);
+      endInput.value = formatDateForInput(maxDate);
+      label.textContent = `${minDate.toLocaleDateString()} - ${maxDate.toLocaleDateString()}`;
+
+      let activeHandle = null;
+
+      function updateSliderPosition(handle, clientX) {
+        const rect = slider.getBoundingClientRect();
+        let percentage = (clientX - rect.left) / rect.width;
+        percentage = Math.max(0, Math.min(1, percentage));
+
+        let daysFromStart;
+        let newDate;
+        if (handle === minHandle) {
+          const maxPos = parseFloat(maxHandle.style.left) / 100;
+          percentage = Math.min(percentage, maxPos);
+          minHandle.style.left = `${percentage * 100}%`;
+          track.style.left = `${percentage * 100}%`;
+          track.style.width = `${(maxPos - percentage) * 100}%`;
+          daysFromStart = percentage * totalDays;
+          newDate = new Date(minDate.getTime() + daysFromStart * 1000 * 60 * 60 * 24);
+          selectedDateRange.start = newDate;
+          startInput.value = formatDateForInput(newDate);
+        } else {
+          const minPos = parseFloat(minHandle.style.left) / 100;
+          percentage = Math.max(percentage, minPos);
+          maxHandle.style.left = `${percentage * 100}%`;
+          track.style.width = `${(percentage - minPos) * 100}%`;
+          daysFromStart = percentage * totalDays;
+          newDate = new Date(minDate.getTime() + daysFromStart * 1000 * 60 * 60 * 24);
+          selectedDateRange.end = newDate;
+          endInput.value = formatDateForInput(newDate);
+        }
+
+        label.textContent = `${selectedDateRange.start.toLocaleDateString()} - ${selectedDateRange.end.toLocaleDateString()}`;
+        updateData();
+      }
+
+      function updateSliderFromInputs() {
+        const startDate = new Date(startInput.value);
+        const endDate = new Date(endInput.value);
+
+        if (startDate < minDate) startDate.setTime(minDate.getTime());
+        if (endDate > maxDate) endDate.setTime(maxDate.getTime());
+        if (startDate > endDate) {
+          startDate.setTime(endDate.getTime());
+          startInput.value = formatDateForInput(startDate);
+        }
+
+        selectedDateRange.start = startDate;
+        selectedDateRange.end = endDate;
+
+        const startDays = (startDate - minDate) / (1000 * 60 * 60 * 24);
+        const endDays = (endDate - minDate) / (1000 * 60 * 60 * 24);
+        const startPos = (startDays / totalDays) * 100;
+        const endPos = (endDays / totalDays) * 100;
+
+        minHandle.style.left = `${startPos}%`;
+        maxHandle.style.left = `${endPos}%`;
+        track.style.left = `${startPos}%`;
+        track.style.width = `${endPos - startPos}%`;
+
+        label.textContent = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+        updateData();
+      }
+
+      function updateData() {
+        filteredFeatures = allFeatures.filter(f => {
+          const date = new Date(f.attributes.STARTDATE);
+          return date >= selectedDateRange.start && date <= selectedDateRange.end;
+        });
+        fullData = transformSSOData(filteredFeatures);
+        Graph.graphData(getPrunedTree(fullData));
+        Graph.d3ReheatSimulation();
+        updateSSOTable(filteredFeatures);
+        updateStatsTable(filteredFeatures);
+      }
+
+      function startDragging(e) {
+        activeHandle = e.target;
+        activeHandle.classList.add("active");
+        e.preventDefault();
+      }
+
+      function stopDragging() {
+        if (activeHandle) {
+          activeHandle.classList.remove("active");
+          activeHandle = null;
+        }
+      }
+
+      function moveHandle(e) {
+        if (activeHandle) {
+          updateSliderPosition(activeHandle, e.clientX);
+        }
+      }
+
+      minHandle.addEventListener("mousedown", startDragging);
+      maxHandle.addEventListener("mousedown", startDragging);
+      document.addEventListener("mousemove", moveHandle);
+      document.addEventListener("mouseup", stopDragging);
+
+      minHandle.addEventListener("touchstart", (e) => startDragging(e.touches[0]));
+      maxHandle.addEventListener("touchstart", (e) => startDragging(e.touches[0]));
+      document.addEventListener("touchmove", (e) => moveHandle(e.touches[0]));
+      document.addEventListener("touchend", stopDragging);
+
+      startInput.addEventListener("change", updateSliderFromInputs);
+      endInput.addEventListener("change", updateSliderFromInputs);
+    }
+
     fetchSSOData()
       .then(features => {
-        const fullData = transformSSOData(features);
-
-        // Compute min and max counts for relative sizing within each category
-        const wwtpCounts = fullData.nodes.filter(n => n.type === 'wwtp').map(n => n.count);
-        const wwtpMinCount = Math.min(...wwtpCounts, 1);
-        const wwtpMaxCount = Math.max(...wwtpCounts, 1);
-
-        const basinCounts = fullData.nodes.filter(n => n.type === 'basin').map(n => n.count);
-        const basinMinCount = Math.min(...basinCounts, 1);
-        const basinMaxCount = Math.max(...basinCounts, 1);
-
-        const rssoCounts = fullData.nodes.filter(n => n.type === 'rsso').map(n => n.count);
-        const rssoMinCount = Math.min(...rssoCounts, 1);
-        const rssoMaxCount = Math.max(...rssoCounts, 1);
-
-        // Initialize the force graph
-        const Graph = ForceGraph()(document.getElementById('graph'))
-          .backgroundColor('#101020') // Dark sci-fi background
-          .nodeRelSize(5) // Base size for nodes
-          .nodeLabel('description') // Tooltip for all nodes
-          .nodeCanvasObject((node, ctx, globalScale) => {
-            let size;
-
-            // Define minimum sizes for each category
-            const wwtpMinSize = 5; // Reduced from 6
-            const basinMinSize = 3; // Reduced from 4
-            const rssoMinSize = 2; // Reduced from 3
-
-            // Scaling factor for relative sizing
-            const wwtpScaleFactor = 1.2;
-            const basinScaleFactor = 1.0;
-            const rssoScaleFactor = 0.8;
-
-            // Relative scaling function based on count range
-            const getRelativeSize = (count, minCount, maxCount, minSize, scaleFactor) => {
-              if (count <= 2) return minSize;
-              if (maxCount === minCount) return minSize;
-              const range = maxCount - minCount;
-              const normalizedCount = (count - minCount) / range;
-              const scaledIncrease = normalizedCount * minSize * scaleFactor;
-              return minSize + scaledIncrease;
-            };
-
-            switch (node.type) {
-              case 'coh':
-                size = 12; // Slightly smaller COH node
-                break;
-              case 'wwtp':
-                size = getRelativeSize(node.count, wwtpMinCount, wwtpMaxCount, wwtpMinSize, wwtpScaleFactor);
-                break;
-              case 'basin':
-                size = getRelativeSize(node.count, basinMinCount, basinMaxCount, basinMinSize, basinScaleFactor);
-                break;
-              case 'rsso':
-                size = getRelativeSize(node.count, rssoMinCount, rssoMaxCount, rssoMinSize, rssoScaleFactor);
-                break;
-              case 'sso':
-                size = 3;
-                break;
-              default:
-                size = 3;
-            }
-
-            // Sci-fi node styling with simple gradient and glow
-            const nodeColor = node.type === 'coh' ? '#FFD700' : 
-                            (node.type === 'sso' ? node.color : node.color);
-
-            const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, size / 2);
-            gradient.addColorStop(0, nodeColor); // Bright center
-            gradient.addColorStop(1, nodeColor + '80'); // Semi-transparent edge
-
-            ctx.shadowColor = nodeColor;
-            ctx.shadowBlur = size * 0.3; // Subtle glow
-            ctx.beginPath();
-            ctx.arc(node.x, node.y, size / 2, 0, 2 * Math.PI, false);
-            ctx.fillStyle = gradient;
-            ctx.fill();
-
-            ctx.shadowBlur = 0; // Reset shadow
-          })
-          .linkColor(() => '#00FFFF80') // Semi-transparent cyan links
-          .linkWidth(1) // Consistent link width
-          .linkDirectionalParticles(1) // One particle per link
-          .linkDirectionalParticleWidth(2) // Slightly smaller particles
-          .linkDirectionalParticleSpeed(0.006) // Slower particle speed
-          .linkDirectionalParticleColor(() => '#FF00FF') // Solid magenta particles
-          .onNodeHover(node => document.getElementById('graph').style.cursor = node && (node.type === 'wwtp' || node.type === 'basin' || node.type === 'rsso') && node.childLinks.length ? 'pointer' : null)
-          .onNodeClick(node => {
-            if ((node.type === 'wwtp' || node.type === 'basin' || node.type === 'rsso') && node.childLinks.length) {
-              node.expansionLevel = node.expansionLevel === 1 ? 0 : 1;
-              Graph.graphData(getPrunedTree(fullData));
-              Graph.d3ReheatSimulation(); // Restart simulation for smooth transitions
-            }
-          })
-          // Use .d3Force() now that D3 is included
-          .d3Force('link', d3.forceLink().id(d => d.id).distance(link => {
-            // Shorten distances for specific edges
-            const sourceType = link.source.type;
-            const targetType = link.target.type;
-            if (sourceType === 'basin' && (targetType === 'rsso' || targetType === 'sso')) {
-              return 15; // Short distance for Basin → rSSO/SSO
-            } else if (sourceType === 'rsso' && targetType === 'sso') {
-              return 10; // Short distance for rSSO → SSO
-            } else if (sourceType === 'wwtp' && targetType === 'basin') {
-              return 20; // Slightly shorter for WWTP → Basin
-            }
-            return 50; // Default distance for other links (e.g., COH → WWTP)
-          }).strength(0.7)) // Increase link strength for stronger pull
-          .d3Force('charge', d3.forceManyBody().strength(node => {
-            // Reduce repulsion for Basin, rSSO, and SSO nodes
-            if (node.type === 'basin' || node.type === 'rsso' || node.type === 'sso') {
-              return -10; // Weaker repulsion for tighter clustering
-            }
-            return -30; // Default repulsion for COH and WWTP nodes
-          }))
-          .d3AlphaDecay(0.05) // Slower decay for better settling
-          .graphData(getPrunedTree(fullData));
+        allFeatures = features;
+        filteredFeatures = allFeatures;
+        initializeDateSlider(allFeatures);
+        fullData = transformSSOData(filteredFeatures);
+        initializeGraph();
+        Graph.graphData(getPrunedTree(fullData));
+        updateSSOTable(filteredFeatures);
+        updateStatsTable(filteredFeatures);
       })
       .catch(error => console.error('Error fetching SSO data:', error));
   </script>
