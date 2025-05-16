@@ -53,7 +53,9 @@
       flex-direction: column;
       background: linear-gradient(180deg, rgba(20, 20, 40, 0.7), rgba(10, 10, 30, 0.7));
       min-height: 0;
+      max-width: calc(100vw - 700px);
       position: relative;
+      overflow: hidden;
     }
     .content-wrapper {
       width: 100%;
@@ -63,23 +65,24 @@
       flex-grow: 1;
       min-height: 0;
     }
-    .graph-container, .table-container {
+    .graph-container, .table-container, .chart-container {
       width: 100%;
       background: rgba(10, 10, 30, 0.9);
       border-radius: 8px;
       box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2), inset 0 0 10px rgba(0, 212, 255, 0.1);
       padding: 0.8rem;
-      overflow: hidden;
       border: 1px solid rgba(0, 212, 255, 0.3);
     }
     .graph-container {
       height: 100%;
       position: relative;
+      overflow: hidden;
     }
     .table-container {
       max-height: 30vh;
       overflow-y: auto;
       margin-bottom: 1rem;
+      position: relative;
     }
     #graph {
       width: 100% !important;
@@ -96,7 +99,6 @@
       font-weight: 700;
       letter-spacing: 1.5px;
     }
-    /* Overlay Styles */
     .overlay {
       position: absolute;
       top: 1rem;
@@ -125,7 +127,6 @@
     .overlay span.value {
       color: #ffffff;
     }
-    /* Date Range Slider Styles */
     .date-slider-container {
       width: 100%;
       margin: 0.5rem 0;
@@ -198,10 +199,30 @@
       margin-top: 0.5rem;
       font-family: 'Orbitron', sans-serif;
     }
-    /* Table Styles */
     .table-wrapper {
       overflow-x: auto;
       width: 100%;
+    }
+    .table-container:first-of-type::-webkit-scrollbar {
+      height: 8px;
+      width: 8px;
+      position: absolute;
+      top: 0;
+      display: block;
+    }
+    .table-container:first-of-type::-webkit-scrollbar-track {
+      background: #1a1a33;
+      border-radius: 4px;
+      box-shadow: inset 0 0 5px rgba(0, 212, 255, 0.2);
+    }
+    .table-container:first-of-type::-webkit-scrollbar-thumb {
+      background: linear-gradient(45deg, #00d4ff, #007bff);
+      border-radius: 4px;
+      box-shadow: 0 0 8px rgba(0, 212, 255, 0.8), inset 0 0 3px rgba(255, 255, 255, 0.3);
+    }
+    .table-container:first-of-type::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(45deg, #00eaff, #008cff);
+      box-shadow: 0 0 12px rgba(0, 212, 255, 1), inset 0 0 3px rgba(255, 255, 255, 0.5);
     }
     table {
       width: 100%;
@@ -210,10 +231,10 @@
       font-size: 0.85rem;
     }
     #ssoTable {
-      min-width: 900px; /* Ensure horizontal scrollbar for Filtered SSO Events */
+      min-width: 900px;
     }
     .stats-table {
-      min-width: 400px; /* Ensure horizontal scrollbar for SSO Statistics */
+      min-width: 400px;
     }
     th, td {
       padding: 0.6rem 0.8rem;
@@ -227,10 +248,15 @@
       text-shadow: 0 0 6px #00d4ff;
       position: sticky;
       top: 0;
-      z-index: 1;
+      z-index: 10;
       font-weight: 600;
       letter-spacing: 0.5px;
       border-bottom: 2px solid #00d4ff;
+    }
+    .stats-table th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
     td {
       background: rgba(20, 20, 40, 0.9);
@@ -242,33 +268,96 @@
     .stats-table th, .stats-table td {
       text-align: center;
     }
-    /* Scrollbar Styling */
-    .table-wrapper::-webkit-scrollbar,
-    .table-container::-webkit-scrollbar {
-      height: 8px;
-      width: 8px;
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
     }
-    .table-wrapper::-webkit-scrollbar-track,
-    .table-container::-webkit-scrollbar-track {
-      background: #1a1a33;
+    .download-btn {
+      padding: 0.4rem 0.8rem;
+      background: linear-gradient(45deg, #00d4ff, #007bff);
+      border: none;
       border-radius: 4px;
+      color: #fff;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0, 212, 255, 0.3);
+      transition: all 0.2s ease;
     }
-    .table-wrapper::-webkit-scrollbar-thumb,
-    .table-container::-webkit-scrollbar-thumb {
-      background: #00d4ff;
+    .download-btn:hover {
+      background: linear-gradient(45deg, #00eaff, #008cff);
+      box-shadow: 0 4px 8px rgba(0, 212, 255, 0.5);
+    }
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 10, 30, 0.95);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      transition: opacity 0.5s ease;
+    }
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #00d4ff;
+      border-top: 5px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    .loading-text {
+      margin-top: 1rem;
+      color: #00d4ff;
+      font-size: 1rem;
+      text-shadow: 0 0 6px #00d4ff;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .chart-container {
+      position: relative;
+    }
+    .chart-buttons {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+    .chart-btn {
+      padding: 0.3rem 0.6rem;
+      background: linear-gradient(45deg, #00d4ff, #007bff);
+      border: none;
       border-radius: 4px;
-      box-shadow: 0 0 6px rgba(0, 212, 255, 0.5);
+      color: #fff;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.8rem;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0, 212, 255, 0.3);
+      transition: all 0.2s ease;
     }
-    .table-wrapper::-webkit-scrollbar-thumb:hover,
-    .table-container::-webkit-scrollbar-thumb:hover {
-      background: #00eaff;
+    .chart-btn:hover, .chart-btn.active {
+      background: linear-gradient(45deg, #00eaff, #008cff);
+      box-shadow: 0 4px 8px rgba(0, 212, 255, 0.5);
+    }
+    #lineChart {
+      width: 100%;
+      height: 200px;
     }
     @media (min-width: 769px) {
       .container {
         flex-direction: row;
       }
       .sidebar {
-        width: 700px; /* Widened to 2x (previously 350px) */
+        width: 700px;
         height: 100vh;
         border-bottom: none;
         border-right: 1px solid rgba(0, 212, 255, 0.4);
@@ -280,9 +369,11 @@
         box-shadow: 2px 0 15px rgba(0, 0, 0, 0.6);
       }
       .main-content {
-        margin-left: 700px; /* Adjusted for wider sidebar */
+        margin-left: 700px;
         height: 100vh;
         padding: 1rem;
+        max-width: calc(100vw - 700px);
+        overflow: hidden;
       }
       .content-wrapper {
         flex-direction: column;
@@ -297,10 +388,17 @@
       .table-container {
         max-height: 25vh;
       }
+      .chart-container {
+        height: 250px;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading SSO Data...</div>
+  </div>
   <div class="container">
     <div class="sidebar">
       <h3>Filter by Start Date</h3>
@@ -317,7 +415,10 @@
         <div id="dateRangeLabel"></div>
       </div>
       <div class="table-container">
-        <h3>Filtered SSO Events</h3>
+        <div class="table-header">
+          <h3>Filtered SSO Events</h3>
+          <button class="download-btn" onclick="downloadExcel()">Download as Excel</button>
+        </div>
         <div class="table-wrapper">
           <table id="ssoTable">
             <thead>
@@ -352,6 +453,15 @@
           </table>
         </div>
       </div>
+      <div class="chart-container">
+        <h3>SSO Counts Over Time</h3>
+        <div class="chart-buttons">
+          <button class="chart-btn active" onclick="setChartGroup('week')">Week</button>
+          <button class="chart-btn" onclick="setChartGroup('month')">Month</button>
+          <button class="chart-btn" onclick="setChartGroup('year')">Year</button>
+        </div>
+        <canvas id="lineChart"></canvas>
+      </div>
     </div>
     <div class="main-content">
       <h1>SSO Force-Directed Graph by WWTP and Basin</h1>
@@ -368,10 +478,10 @@
     </div>
   </div>
 
-  <!-- Load D3.js explicitly before force-graph -->
   <script src="https://d3js.org/d3.v5.min.js"></script>
-  <!-- Load the force-graph library from CDN -->
   <script src="https://unpkg.com/force-graph@1.49.4/dist/force-graph.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <script>
     const ssoApiUrl = 'https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/RSSO_Package/FeatureServer/0/query';
@@ -381,8 +491,21 @@
     let filteredFeatures = [];
     const sewerMainTypes = ["Manhole", "Lift Station", "Gravity Main", "Force Main", "Treatment Plant"];
     let minDate, maxDate, totalDays, selectedDateRange;
+    let lineChart;
+    let chartGroup = 'week';
+
+    function showLoading() {
+      document.getElementById('loadingOverlay').style.display = 'flex';
+    }
+
+    function hideLoading() {
+      const overlay = document.getElementById('loadingOverlay');
+      overlay.style.opacity = '0';
+      setTimeout(() => overlay.style.display = 'none', 500);
+    }
 
     function fetchSSOData(resultOffset = 0, accumulated = []) {
+      showLoading();
       const queryParams = new URLSearchParams({
         where: "System LIKE '%ublic%' AND STARTDATE >= date '2021-04-01'",
         outFields: "*",
@@ -395,9 +518,18 @@
       return fetch(ssoApiUrl + "?" + queryParams.toString())
         .then(response => response.ok ? response.json() : Promise.reject("SSO data error: " + response.status))
         .then(json => {
-          if (!json.features) return accumulated;
+          if (!json.features) {
+            hideLoading();
+            return accumulated;
+          }
           accumulated.push(...json.features);
           if (json.exceededTransferLimit) return fetchSSOData(resultOffset + 2000, accumulated);
+          hideLoading();
+          return accumulated;
+        })
+        .catch(error => {
+          hideLoading();
+          console.error('Error fetching SSO data:', error);
           return accumulated;
         });
     }
@@ -719,6 +851,12 @@
           return -30;
         }))
         .d3AlphaDecay(0.05);
+
+      // Center the graph initially
+      const graphContainer = document.getElementById('graph');
+      const width = graphContainer.clientWidth;
+      const height = graphContainer.clientHeight;
+      Graph.centerAt(width / 2, height / 2, 0);
     }
 
     function normalizeCause(cause) {
@@ -750,6 +888,25 @@
       return date.toISOString().split('T')[0];
     }
 
+    function downloadExcel() {
+      const data = filteredFeatures.map(feature => ({
+        Date: new Date(feature.attributes.STARTDATE).toLocaleDateString(),
+        WWTP: feature.attributes.WWTP || 'Unknown',
+        Basin: feature.attributes.BASIN || 'Unknown',
+        Address: feature.attributes.ADDRESS || 'Unknown',
+        Cause: feature.attributes.CAUSE || 'Unknown',
+        'Structure Type': sewerMainTypes.includes(feature.attributes.STRUCTURETYPE) ? "Main" : "Service Lateral",
+        System: feature.attributes.SYSTEM || 'Unknown',
+        'Volume (gal)': feature.attributes.VOLUMEGAL || 'N/A',
+        'Duration (hrs)': feature.attributes.DURATIONHOUR || 'N/A',
+        Weather: feature.attributes.WEATHER || 'N/A'
+      }));
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "SSO Events");
+      XLSX.writeFile(wb, "SSO_Events.xlsx");
+    }
+
     function updateSSOTable(features) {
       const tbody = document.querySelector("#ssoTable tbody");
       tbody.innerHTML = "";
@@ -779,11 +936,9 @@
       const tbody = document.querySelector("#statsTable tbody");
       tbody.innerHTML = "";
 
-      // Total SSOs
       const totalSSOs = features.length;
       tbody.innerHTML += `<tr><td>Total SSOs</td><td>${totalSSOs}</td></tr>`;
 
-      // Repeat SSOs (rSSO count)
       const wwtpGroups = {};
       features.forEach(feature => {
         const wwtp = feature.attributes.WWTP || 'Unknown';
@@ -804,18 +959,15 @@
       });
       tbody.innerHTML += `<tr><td>Repeat SSO Locations (rSSO)</td><td>${repeatSSOCount}</td></tr>`;
 
-      // Main vs Lateral Breakdown
       const mainCount = features.filter(f => sewerMainTypes.includes(f.attributes.STRUCTURETYPE)).length;
       const lateralCount = features.length - mainCount;
       tbody.innerHTML += `<tr><td>Main SSOs</td><td>${mainCount}</td></tr>`;
       tbody.innerHTML += `<tr><td>Lateral SSOs</td><td>${lateralCount}</td></tr>`;
 
-      // Update Overlay
       document.getElementById('totalSSOs').textContent = totalSSOs;
       document.getElementById('totalMains').textContent = mainCount;
       document.getElementById('totalLaterals').textContent = lateralCount;
 
-      // Cause Breakdown
       const causeCounts = {};
       features.forEach(f => {
         const cause = f.attributes.CAUSE || 'Unknown';
@@ -830,12 +982,207 @@
       });
     }
 
+    function initializeLineChart(features) {
+      const ctx = document.getElementById('lineChart').getContext('2d');
+      if (lineChart) lineChart.destroy();
+      const dates = features.map(f => new Date(f.attributes.STARTDATE)).filter(d => !isNaN(d));
+      const min = new Date(Math.min(...dates));
+      const max = new Date(Math.max(...dates, Date.now()));
+
+      const dataByDate = {};
+      features.forEach(f => {
+        const date = new Date(f.attributes.STARTDATE);
+        const dateStr = date.toISOString().split('T')[0];
+        if (!dataByDate[dateStr]) {
+          dataByDate[dateStr] = { main: 0, lateral: 0 };
+        }
+        if (sewerMainTypes.includes(f.attributes.STRUCTURETYPE)) {
+          dataByDate[dateStr].main++;
+        } else {
+          dataByDate[dateStr].lateral++;
+        }
+      });
+
+      let labels = [];
+      let mainData = [];
+      let lateralData = [];
+      if (chartGroup === 'week') {
+        labels = getWeeklyLabels(min, max);
+        [mainData, lateralData] = getGroupedData(dataByDate, labels, 'week');
+      } else if (chartGroup === 'month') {
+        labels = getMonthlyLabels(min, max);
+        [mainData, lateralData] = getGroupedData(dataByDate, labels, 'month');
+      } else if (chartGroup === 'year') {
+        labels = getYearlyLabels(min, max);
+        [mainData, lateralData] = getGroupedData(dataByDate, labels, 'year');
+      }
+
+      lineChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Main SSOs',
+              data: mainData,
+              borderColor: '#00d4ff',
+              backgroundColor: 'rgba(0, 212, 255, 0.2)',
+              fill: false,
+              tension: 0.1
+            },
+            {
+              label: 'Lateral SSOs',
+              data: lateralData,
+              borderColor: '#ff00ff',
+              backgroundColor: 'rgba(255, 0, 255, 0.2)',
+              fill: false,
+              tension: 0.1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              display: true,
+              title: { display: true, text: 'Time Period', color: '#00d4ff' },
+              ticks: { color: '#e0e0e0' }
+            },
+            y: {
+              display: true,
+              title: { display: true, text: 'Count', color: '#00d4ff' },
+              ticks: { color: '#e0e0e0' },
+              beginAtZero: true
+            }
+          },
+          plugins: {
+            legend: {
+              labels: { color: '#e0e0e0' }
+            }
+          }
+        }
+      });
+    }
+
+    function updateLineChart(features) {
+      const dates = features.map(f => new Date(f.attributes.STARTDATE)).filter(d => !isNaN(d));
+      const min = new Date(Math.min(...dates));
+      const max = new Date(Math.max(...dates, Date.now()));
+
+      const dataByDate = {};
+      features.forEach(f => {
+        const date = new Date(f.attributes.STARTDATE);
+        const dateStr = date.toISOString().split('T')[0];
+        if (!dataByDate[dateStr]) {
+          dataByDate[dateStr] = { main: 0, lateral: 0 };
+        }
+        if (sewerMainTypes.includes(f.attributes.STRUCTURETYPE)) {
+          dataByDate[dateStr].main++;
+        } else {
+          dataByDate[dateStr].lateral++;
+        }
+      });
+
+      let labels = [];
+      let mainData = [];
+      let lateralData = [];
+      if (chartGroup === 'week') {
+        labels = getWeeklyLabels(min, max);
+        [mainData, lateralData] = getGroupedData(dataByDate, labels, 'week');
+      } else if (chartGroup === 'month') {
+        labels = getMonthlyLabels(min, max);
+        [mainData, lateralData] = getGroupedData(dataByDate, labels, 'month');
+      } else if (chartGroup === 'year') {
+        labels = getYearlyLabels(min, max);
+        [mainData, lateralData] = getGroupedData(dataByDate, labels, 'year');
+      }
+
+      lineChart.data.labels = labels;
+      lineChart.data.datasets[0].data = mainData;
+      lineChart.data.datasets[1].data = lateralData;
+      lineChart.update();
+    }
+
+    function getWeeklyLabels(start, end) {
+      const labels = [];
+      let current = new Date(start);
+      while (current <= end) {
+        const weekStart = new Date(current);
+        const weekEnd = new Date(current);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        if (weekEnd > end) weekEnd.setTime(end.getTime());
+        labels.push(`${weekStart.toLocaleDateString()} - ${weekEnd.toLocaleDateString()}`);
+        current.setDate(current.getDate() + 7);
+      }
+      return labels;
+    }
+
+    function getMonthlyLabels(start, end) {
+      const labels = [];
+      let current = new Date(start);
+      while (current <= end) {
+        const monthStart = new Date(current.getFullYear(), current.getMonth(), 1);
+        const monthEnd = new Date(current.getFullYear(), current.getMonth() + 1, 0);
+        if (monthEnd > end) monthEnd.setTime(end.getTime());
+        labels.push(`${monthStart.toLocaleDateString()} - ${monthEnd.toLocaleDateString()}`);
+        current.setMonth(current.getMonth() + 1);
+      }
+      return labels;
+    }
+
+    function getYearlyLabels(start, end) {
+      const labels = [];
+      let current = new Date(start);
+      while (current <= end) {
+        const yearStart = new Date(current.getFullYear(), 0, 1);
+        const yearEnd = new Date(current.getFullYear(), 11, 31);
+        if (yearEnd > end) yearEnd.setTime(end.getTime());
+        labels.push(`${yearStart.getFullYear()}`);
+        current.setFullYear(current.getFullYear() + 1);
+      }
+      return labels;
+    }
+
+    function getGroupedData(dataByDate, labels, group) {
+      const mainData = new Array(labels.length).fill(0);
+      const lateralData = new Array(labels.length).fill(0);
+
+      labels.forEach((label, index) => {
+        let [startStr, endStr] = label.split(' - ');
+        if (!endStr) endStr = startStr;
+        const start = new Date(startStr);
+        const end = new Date(endStr);
+        end.setDate(end.getDate() + 1);
+
+        for (const dateStr in dataByDate) {
+          const date = new Date(dateStr);
+          if (date >= start && date < end) {
+            mainData[index] += dataByDate[dateStr].main;
+            lateralData[index] += dataByDate[dateStr].lateral;
+          }
+        }
+      });
+
+      return [mainData, lateralData];
+    }
+
+    function setChartGroup(group) {
+      chartGroup = group;
+      document.querySelectorAll('.chart-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`.chart-btn[onclick="setChartGroup('${group}')"]`).classList.add('active');
+      initializeLineChart(filteredFeatures);
+    }
+
     function initializeDateSlider(features) {
       const dates = features.map(f => new Date(f.attributes.STARTDATE)).filter(d => !isNaN(d));
       minDate = new Date(Math.min(...dates));
       maxDate = new Date(Math.max(...dates, Date.now()));
       totalDays = (maxDate - minDate) / (1000 * 60 * 60 * 24);
-      selectedDateRange = { start: new Date(minDate), end: new Date(maxDate) };
+
+      const threeMonthsAgo = new Date(maxDate);
+      threeMonthsAgo.setMonth(maxDate.getMonth() - 3);
+      selectedDateRange = { start: threeMonthsAgo, end: maxDate };
 
       const slider = document.getElementById("dateSlider");
       const track = document.getElementById("dateSliderTrack");
@@ -845,7 +1192,7 @@
       const startInput = document.getElementById("startDateInput");
       const endInput = document.getElementById("endDateInput");
 
-      const startDays = 0;
+      const startDays = (threeMonthsAgo - minDate) / (1000 * 60 * 60 * 24);
       const endDays = totalDays;
       const startPos = (startDays / totalDays) * 100;
       const endPos = (endDays / totalDays) * 100;
@@ -855,9 +1202,9 @@
       track.style.left = `${startPos}%`;
       track.style.width = `${endPos - startPos}%`;
 
-      startInput.value = formatDateForInput(minDate);
+      startInput.value = formatDateForInput(threeMonthsAgo);
       endInput.value = formatDateForInput(maxDate);
-      label.textContent = `${minDate.toLocaleDateString()} - ${maxDate.toLocaleDateString()}`;
+      label.textContent = `${threeMonthsAgo.toLocaleDateString()} - ${maxDate.toLocaleDateString()}`;
 
       let activeHandle = null;
 
@@ -870,7 +1217,7 @@
         let newDate;
         if (handle === minHandle) {
           const maxPos = parseFloat(maxHandle.style.left) / 100;
-          percentage = Math.min(percentage, maxPos);
+          percentage = Math.min(percentage, maxPos - 0.01);
           minHandle.style.left = `${percentage * 100}%`;
           track.style.left = `${percentage * 100}%`;
           track.style.width = `${(maxPos - percentage) * 100}%`;
@@ -880,7 +1227,7 @@
           startInput.value = formatDateForInput(newDate);
         } else {
           const minPos = parseFloat(minHandle.style.left) / 100;
-          percentage = Math.max(percentage, minPos);
+          percentage = Math.max(percentage, minPos + 0.01);
           maxHandle.style.left = `${percentage * 100}%`;
           track.style.width = `${(percentage - minPos) * 100}%`;
           daysFromStart = percentage * totalDays;
@@ -894,8 +1241,11 @@
       }
 
       function updateSliderFromInputs() {
-        const startDate = new Date(startInput.value);
-        const endDate = new Date(endInput.value);
+        let startDate = new Date(startInput.value);
+        let endDate = new Date(endInput.value);
+
+        if (isNaN(startDate.getTime())) startDate = new Date(selectedDateRange.start);
+        if (isNaN(endDate.getTime())) endDate = new Date(selectedDateRange.end);
 
         if (startDate < minDate) startDate.setTime(minDate.getTime());
         if (endDate > maxDate) endDate.setTime(maxDate.getTime());
@@ -931,6 +1281,7 @@
         Graph.d3ReheatSimulation();
         updateSSOTable(filteredFeatures);
         updateStatsTable(filteredFeatures);
+        updateLineChart(filteredFeatures);
       }
 
       function startDragging(e) {
@@ -976,6 +1327,7 @@
         Graph.graphData(getPrunedTree(fullData));
         updateSSOTable(filteredFeatures);
         updateStatsTable(filteredFeatures);
+        initializeLineChart(filteredFeatures);
       })
       .catch(error => console.error('Error fetching SSO data:', error));
   </script>
